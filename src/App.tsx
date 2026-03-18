@@ -65,7 +65,7 @@ function App() {
             <Route path={ROUTES.app.payments.slice(1)} element={<PaymentsPage />} />
             <Route path={ROUTES.app.stats.slice(1)} element={<ClubStats />} />
           </Route>
-          <Route path="*" element={<Navigate to={ROUTES.app.index} replace />} />
+          <Route path="*" element={<Navigate to={ROUTES.signIn} replace />} />
         </Routes>
       </AppProvider>
     </BrowserRouter>

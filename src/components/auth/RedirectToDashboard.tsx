@@ -7,11 +7,13 @@ export function RedirectToDashboard() {
   const { accountType } = useApp()
   const navigate = useNavigate()
   const to =
-    accountType === 'club'
-      ? ROUTES.app.teamDashboard
-      : accountType === 'federation'
-        ? ROUTES.app.federationDashboard
-        : ROUTES.app.dashboard
+    accountType == null
+      ? ROUTES.signIn
+      : accountType === 'club'
+        ? ROUTES.app.teamDashboard
+        : accountType === 'federation'
+          ? ROUTES.app.federationDashboard
+          : ROUTES.app.dashboard
 
   useEffect(() => {
     navigate(to, { replace: true })
