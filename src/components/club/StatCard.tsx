@@ -1,5 +1,3 @@
-import type { StatUpload } from '../../types/club'
-
 type Props = {
   swimmerName: string
   latestMetric?: string

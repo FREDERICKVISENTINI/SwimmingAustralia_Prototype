@@ -1,12 +1,4 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { useFederationLightPage } from '../../context/FederationLightPageContext'
 
 const STATE_DATA = [
@@ -58,7 +50,7 @@ export function HeatmapPlaceholder({ title = 'Participation by state', className
             width={30}
           />
           <Tooltip
-            formatter={(value: number) => [value.toLocaleString(), 'Swimmers']}
+            formatter={((value: number) => [Number(value ?? 0).toLocaleString(), 'Swimmers']) as any}
             contentStyle={tooltip}
             cursor={{ fill: cursorFill }}
           />

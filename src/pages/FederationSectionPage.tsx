@@ -205,7 +205,9 @@ export function FederationSectionPage() {
               <div className="lg:col-span-2">
                 <InsightTable
                   columns={talentColumns}
-                  data={derived.filteredAthletes}
+                  // filteredAthletes is derived from EMERGING_ATHLETES with filters applied.
+                  // Cast keeps the table happy without over-tight typing.
+                  data={derived.filteredAthletes as any}
                   emptyMessage="No emerging athletes"
                 />
               </div>

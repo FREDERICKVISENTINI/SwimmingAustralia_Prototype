@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import { ClubMetricCard, PaymentRecordRow, ClubEmptyState } from '../components/club'
 import { Modal } from '../components/ui/Modal'
-import type { PaymentRecord, FeeType } from '../types/club'
+import type { FeeType } from '../types/club'
 
 const FEE_TYPES: { value: FeeType; label: string }[] = [
   { value: 'term', label: 'Term fee' },

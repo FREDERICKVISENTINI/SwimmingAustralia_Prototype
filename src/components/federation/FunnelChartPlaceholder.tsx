@@ -1,12 +1,4 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { useFederationLightPage } from '../../context/FederationLightPageContext'
 
 type FunnelStage = { stage: string; count: number; pct: number }
@@ -67,7 +59,7 @@ export function FunnelChartPlaceholder({ stages, title = 'Pathway funnel', class
             tickLine={false}
           />
           <Tooltip
-            formatter={(value: number) => [value.toLocaleString(), 'Swimmers']}
+            formatter={((value: number) => [Number(value ?? 0).toLocaleString(), 'Swimmers']) as any}
             contentStyle={tooltip}
             cursor={{ fill: cursorFill }}
           />

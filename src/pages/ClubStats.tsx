@@ -152,7 +152,10 @@ export function ClubStats() {
         initialTab={uploadModalInitialTab}
         onSave={(payload) => {
           const { attachment: _attachment, ...rest } = payload
-          addClubStatUpload(rest)
+          addClubStatUpload({
+            ...rest,
+            uploadedAt: new Date().toISOString(),
+          })
           updateClubSwimmer(payload.swimmerId, { latestStatDate: payload.date })
         }}
       />

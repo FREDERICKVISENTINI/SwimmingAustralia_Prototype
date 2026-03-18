@@ -145,15 +145,6 @@ const GENDER_SCALE: Record<string, number> = {
   M: 0.48,
 }
 
-// Meet level multipliers
-const MEET_LEVEL_SCALE: Record<string, number> = {
-  all: 1,
-  club: 0.72,
-  regional: 0.18,
-  state: 0.07,
-  national: 0.03,
-}
-
 export function deriveFilteredMetrics(filters: FederationFilters) {
   const scale =
     (STATE_SCALE[filters.state] ?? 1) *

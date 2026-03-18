@@ -4,7 +4,7 @@ import { PageSection } from '../components/layout/PageSection'
 import { Card } from '../components/ui/Card'
 import { ROUTES } from '../routes'
 import { PATHWAY_STAGES } from '../theme/tokens'
-import type { ClubSwimmer, TalentFlagType, StatUploadSource } from '../types/club'
+import type { TalentFlagType, StatUploadSource } from '../types/club'
 
 const SOURCE_LABELS: Record<StatUploadSource, string> = {
   'meet-result': 'Meet',

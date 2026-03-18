@@ -24,7 +24,6 @@ import {
   ShieldCheck,
   Wallet,
   MapPin,
-  Flag,
 } from 'lucide-react'
 
 function formatAud(n: number): string {
