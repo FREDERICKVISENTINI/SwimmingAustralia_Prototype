@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AusSWIM — Technical Diagram</title>
+  <style>
+    :root {
+      --bg:       #264559;
+      --bg2:      #264559;
+      --card:     #2a4256;
+      --card-alt: #304a60;
+      --border:   #4a6d8c;
+      --border-bright: #5f8fb4;
+      --teal:     #2ecfb8;
+      --blue:     #5bc8e8;
+      --purple:   #a494ff;
+      --gold:     #e8ad52;
+      --green:    #52dfa0;
+      --text:     #eef4fc;
+      --muted:    #8ab2cc;
+      --muted2:   #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #264559;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2.5rem 2rem 4rem;
+    }
+    .page { max-width: 1280px; margin: 0 auto; }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    .header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-title { font-size: 1.65rem; font-weight: 700; color: var(--text); margin-bottom: 0.35rem; letter-spacing: -0.01em; }
+    .page-title em { color: var(--teal); font-style: normal; }
+    .header-sub {
+      font-size: 0.88rem; color: var(--muted2); margin-bottom: 0.75rem; line-height: 1.5;
+    }
+    .status-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .status-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.72rem; font-weight: 600;
+      padding: 0.28rem 0.7rem; border-radius: 4px;
+    }
+    .status-tag.target {
+      background: rgba(46,207,184,0.15); color: var(--teal);
+      border: 1px solid rgba(46,207,184,0.45);
+    }
+    .status-tag.proto {
+      background: rgba(91,200,232,0.14); color: var(--blue);
+      border: 1px solid rgba(91,200,232,0.42);
+    }
+
+    /* ── LAYER BAND ──────────────────────────────────────── */
+    .layer {
+      margin-bottom: 0;
+      border-radius: 10px;
+      padding: 1rem 1rem 0.85rem;
+    }
+    /* Subtle tinted bg per layer for visual separation */
+    .l1 { background: rgba(91,200,232,0.07);  border: 1px solid rgba(91,200,232,0.22); }
+    .l2 { background: rgba(46,207,184,0.07);  border: 1px solid rgba(46,207,184,0.22); }
+    .l3 { background: rgba(164,148,255,0.07); border: 1px solid rgba(164,148,255,0.22); }
+    .l4 { background: rgba(232,173,82,0.07);  border: 1px solid rgba(232,173,82,0.22); }
+
+    .layer-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .layer-badge {
+      font-size: 0.63rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      padding: 0.22rem 0.6rem; border-radius: 4px;
+    }
+    .badge-blue   { background: rgba(91,200,232,0.2);   color: var(--blue);   border: 1px solid rgba(91,200,232,0.5); }
+    .badge-teal   { background: rgba(46,207,184,0.18);  color: var(--teal);   border: 1px solid rgba(46,207,184,0.5); }
+    .badge-purple { background: rgba(164,148,255,0.18); color: var(--purple); border: 1px solid rgba(164,148,255,0.5); }
+    .badge-gold   { background: rgba(232,173,82,0.18);  color: var(--gold);   border: 1px solid rgba(232,173,82,0.5); }
+    .badge-green  { background: rgba(82,223,160,0.16);  color: var(--green);  border: 1px solid rgba(82,223,160,0.45); }
+    .layer-name { font-size: 0.77rem; color: var(--muted2); font-weight: 500; }
+
+    .cards { display: grid; gap: 0.75rem; }
+    .cards-5  { grid-template-columns: repeat(5, 1fr); }
+    .cards-5b { grid-template-columns: repeat(5, 1fr); }
+    .cards-4  { grid-template-columns: repeat(4, 1fr); }
+
+    /* ── CARD ────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1rem 0.85rem;
+      position: relative;
+    }
+    .card-accent {
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 8px 8px 0 0;
+    }
+    .card-icon  { display: none; }
+    .card-title { font-size: 0.84rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; line-height: 1.35; }
+    .card-sub   { font-size: 0.72rem; color: var(--muted2); line-height: 1.5; }
+
+    /* ── CONNECTOR ───────────────────────────────────────── */
+    .connector {
+      height: 2.8rem;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .conn-single {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+    }
+    .conn-line  { width: 2px; height: 12px; background: var(--border-bright); border-radius: 1px; }
+    .conn-label {
+      font-size: 0.65rem; color: var(--muted2); white-space: nowrap;
+      background: var(--bg); padding: 0 8px;
+    }
+    .conn-head {
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 7px solid var(--border-bright);
+    }
+
+    /* ── INFRA BAND ──────────────────────────────────────── */
+    .print-infra {
+      margin-top: 2rem;
+    }
+    .infra-main-head {
+      margin: 0 0 1.1rem;
+      padding: 0;
+    }
+    .infra-wrap {
+      margin-top: 0;
+      border: 1px solid rgba(82,223,160,0.4);
+      border-radius: 10px;
+      background: rgba(82,223,160,0.06);
+      padding: 1.35rem 1.35rem 1.25rem;
+    }
+    .infra-main-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0 0 0.45rem;
+    }
+    .infra-main-title em {
+      font-style: normal;
+      color: var(--teal);
+    }
+    .infra-main-desc {
+      margin: 0;
+      font-size: 0.86rem;
+      color: var(--muted2);
+      line-height: 1.5;
+      max-width: 42rem;
+    }
+    .infra-block {
+      margin-bottom: 0;
+    }
+    .infra-block + .infra-block {
+      margin-top: 1.25rem;
+      padding-top: 1.15rem;
+      border-top: 1px solid rgba(82,223,160,0.22);
+    }
+    .infra-block-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-bottom: 0.85rem;
+    }
+    .infra-block-title {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green);
+    }
+    .infra-block-tag {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      background: rgba(82,223,160,0.12);
+      border: 1px solid rgba(82,223,160,0.35);
+    }
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.85rem 2rem;
+    }
+    .infra-item { display: flex; align-items: flex-start; gap: 0.6rem; }
+    .infra-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); margin-top: 0.35rem; flex-shrink: 0;
+    }
+    .infra-text strong { display: block; font-size: 0.83rem; color: var(--text); margin-bottom: 0.15rem; }
+    .infra-text span   { font-size: 0.74rem; color: var(--muted2); line-height: 1.45; }
+
+    .infra-stack-list {
+      margin: 0.35rem 0 0;
+      padding-left: 1.15rem;
+      font-size: 0.77rem;
+      color: var(--muted2);
+      line-height: 1.6;
+    }
+    .infra-stack-list li { margin-bottom: 0.25rem; }
+    .infra-stack-list li strong { color: var(--text); font-weight: 600; }
+
+
+    @media (max-width: 900px) {
+      .cards-5, .cards-5b { grid-template-columns: repeat(3, 1fr); }
+      .cards-4  { grid-template-columns: repeat(2, 1fr); }
+      .infra-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .cards-5, .cards-5b, .cards-4 { grid-template-columns: 1fr 1fr; }
+      body { padding: 1.25rem 1rem 3rem; }
+    }
+
+    /* ── PRINT: page 1 = diagram (landscape), page 2 = infrastructure ── */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 14mm;
+      }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: var(--bg) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page { max-width: none; margin: 0; width: 100%; }
+
+      .print-diagram {
+        page-break-after: always;
+        break-after: page;
+        border: 1px solid rgba(85, 202, 235, 0.5);
+        border-radius: 10px;
+        padding: 6mm 7mm 7mm;
+        box-sizing: border-box;
+      }
+      /* Uniform scale only (no width stretch) — keeps proportions, less “squished” */
+      .print-diagram-inner {
+        transform: scale(0.92);
+        transform-origin: top center;
+      }
+
+      .print-diagram .header { margin-bottom: 0.65rem; }
+      .print-diagram .page-title { font-size: 1.2rem; margin-bottom: 0.2rem; }
+      .print-diagram .header-sub { font-size: 0.75rem; margin-bottom: 0.4rem; line-height: 1.4; }
+      .print-diagram .status-tag { font-size: 0.65rem; padding: 0.18rem 0.5rem; }
+      .print-diagram .status-row { gap: 0.45rem; }
+
+      .print-diagram .layer-header { margin-bottom: 0.45rem; }
+      .print-diagram .layer-badge { font-size: 0.58rem; padding: 0.15rem 0.45rem; }
+      .print-diagram .layer-name { font-size: 0.68rem; }
+
+      .print-diagram .cards { gap: 0.5rem; }
+      .print-diagram .card {
+        padding: 0.5rem 0.55rem 0.55rem;
+        border-radius: 6px;
+        min-height: 0;
+      }
+      .print-diagram .card-title {
+        font-size: 0.74rem;
+        margin-bottom: 0.18rem;
+        line-height: 1.28;
+      }
+      .print-diagram .card-sub {
+        font-size: 0.64rem;
+        line-height: 1.38;
+      }
+
+      .print-diagram .connector { height: 1.65rem; }
+      .print-diagram .conn-line { height: 8px; }
+      .print-diagram .conn-label {
+        font-size: 0.56rem;
+        padding: 0 6px;
+        white-space: nowrap;
+        text-align: center;
+        line-height: 1.3;
+      }
+      .print-diagram .conn-head {
+        border-left-width: 5px;
+        border-right-width: 5px;
+        border-top-width: 6px;
+      }
+
+      .print-infra {
+        page-break-before: always;
+        break-before: page;
+        page-break-inside: avoid;
+        border: none;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      .print-infra .infra-main-head {
+        margin: 0 0 4mm;
+        padding: 0 0 0 1mm;
+      }
+      .print-infra .infra-wrap {
+        margin-top: 0;
+        padding: 5mm 6mm 6mm;
+        border-radius: 10px;
+        border: 1px solid rgba(78, 219, 154, 0.5);
+        box-sizing: border-box;
+      }
+      .print-infra .infra-main-title { font-size: 1.15rem; margin-bottom: 0.3rem; }
+      .print-infra .infra-main-desc { font-size: 0.72rem; line-height: 1.4; }
+      .print-infra .infra-block + .infra-block { margin-top: 0.75rem; padding-top: 0.65rem; }
+      .print-infra .infra-block-head { margin-bottom: 0.45rem; }
+      .print-infra .infra-block-title { font-size: 0.65rem; }
+      .print-infra .infra-block-tag { font-size: 0.62rem; padding: 0.12rem 0.4rem; }
+      .print-infra .infra-text strong { font-size: 0.78rem; }
+      .print-infra .infra-text span { font-size: 0.68rem; }
+      .print-infra .infra-stack-list { font-size: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="print-diagram">
+  <div class="print-diagram-inner">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="page-title">AusSWIM <em>Unified Platform</em> — Technical Diagram</div>
+    <div class="header-sub">How data moves from source systems through the platform to users, dashboards, and commercial outputs.</div>
+    <div class="status-row">
+      <span class="status-tag target">Target architecture</span>
+      <span class="status-tag proto">Prototype: React 19 + TypeScript + Vite</span>
+    </div>
+  </div>
+
+  <!-- ── LAYER 1: DATA SOURCES ───────────────────────── -->
+  <div class="layer l1">
+    <div class="layer-header">
+      <span class="layer-badge badge-blue">Layer 1</span>
+      <span class="layer-name">Data Sources — What flows in</span>
+    </div>
+    <div class="cards cards-5">
+      <div class="card" data-key="swimcentral">
+        <div class="card-accent" style="background:var(--blue)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Swim Aus Database / SwimCentral</div>
+        <div class="card-sub">National member IDs &amp; club affiliations · manual upload where needed</div>
+      </div>
+      <div class="card" data-key="meetmanager">
+        <div class="card-accent" style="background:var(--blue)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Competition Upload</div>
+        <div class="card-sub">Results via Swim Central · short-term CSV · long-term national automation</div>
+      </div>
+      <div class="card" data-key="retention">
+        <div class="card-accent" style="background:var(--blue)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Retention &amp; Pathway Data</div>
+        <div class="card-sub">Stage progression, drop-off signals &amp; re-engagement tracking</div>
+      </div>
+      <div class="card" data-key="hptools">
+        <div class="card-accent" style="background:var(--blue)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">HP Tools — SPARTA II</div>
+        <div class="card-sub">Biomechanics &amp; technique analysis · gated by subscription tier</div>
+      </div>
+      <div class="card" data-key="coachinput">
+        <div class="card-accent" style="background:var(--blue)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Manual Coach Input</div>
+        <div class="card-sub">Session notes, technique flags &amp; assessments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONNECTOR 1→2 -->
+  <div class="connector">
+    <div class="conn-single">
+      <div class="conn-line"></div>
+      <div class="conn-label">all source data normalised into platform</div>
+      <div class="conn-line"></div>
+      <div class="conn-head"></div>
+    </div>
+  </div>
+
+  <!-- ── LAYER 2: CORE PLATFORM ──────────────────────── -->
+  <div class="layer l2">
+    <div class="layer-header">
+      <span class="layer-badge badge-teal">Layer 2</span>
+      <span class="layer-name">Core Platform — Data spine &amp; intelligence</span>
+    </div>
+    <div class="cards cards-5b">
+      <div class="card" data-key="swimmerid">
+        <div class="card-accent" style="background:var(--teal)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Unified Swimmer Identity</div>
+        <div class="card-sub">Single persistent profile per athlete across clubs, states &amp; systems</div>
+      </div>
+      <div class="card" data-key="pipeline">
+        <div class="card-accent" style="background:var(--teal)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Event-Driven Pipeline</div>
+        <div class="card-sub">Data events trigger downstream analytics &amp; notifications automatically</div>
+      </div>
+      <div class="card" data-key="normalisation">
+        <div class="card-accent" style="background:var(--teal)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Data Normalisation</div>
+        <div class="card-sub">Reconciles formats across all source systems into one canonical model</div>
+      </div>
+      <div class="card" data-key="analytics">
+        <div class="card-accent" style="background:var(--teal)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Analytics Engine</div>
+        <div class="card-sub">Benchmarks, improvement signals &amp; national pathway scores</div>
+      </div>
+      <div class="card" data-key="dropout">
+        <div class="card-accent" style="background:var(--teal)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Dropout Risk Model</div>
+        <div class="card-sub">Detects disengaging athletes early — surfaced to coaches, not federation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONNECTOR 2→3 -->
+  <div class="connector">
+    <div class="conn-single">
+      <div class="conn-line"></div>
+      <div class="conn-label">profiles, benchmarks &amp; signals delivered to users</div>
+      <div class="conn-line"></div>
+      <div class="conn-head"></div>
+    </div>
+  </div>
+
+  <!-- ── LAYER 3: USER-FACING ─────────────────────────── -->
+  <div class="layer l3">
+    <div class="layer-header">
+      <span class="layer-badge badge-purple">Layer 3</span>
+      <span class="layer-name">User-Facing Surfaces — What people see</span>
+    </div>
+    <div class="cards cards-4">
+      <div class="card" data-key="personaldash">
+        <div class="card-accent" style="background:var(--purple)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Family &amp; Swimmer Dashboard</div>
+        <div class="card-sub">Pathway progress, performance insights &amp; parent visibility</div>
+      </div>
+      <div class="card" data-key="clubdash">
+        <div class="card-accent" style="background:var(--purple)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Coach / Club Dashboard</div>
+        <div class="card-sub">Roster, squad management, talent ID &amp; benchmarking</div>
+      </div>
+      <div class="card" data-key="feddash">
+        <div class="card-accent" style="background:var(--purple)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Federation Dashboard</div>
+        <div class="card-sub">National oversight · aggregated metrics only, no individual PII</div>
+      </div>
+      <div class="card" data-key="api">
+        <div class="card-accent" style="background:var(--purple)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">API Layer</div>
+        <div class="card-sub">External integrations &amp; data licensing for partners</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONNECTOR 3→4 -->
+  <div class="connector">
+    <div class="conn-single">
+      <div class="conn-line"></div>
+      <div class="conn-label">subscription access, tier gating &amp; export requests</div>
+      <div class="conn-line"></div>
+      <div class="conn-head"></div>
+    </div>
+  </div>
+
+  <!-- ── LAYER 4: COMMERCIAL ──────────────────────────── -->
+  <div class="layer l4">
+    <div class="layer-header">
+      <span class="layer-badge badge-gold">Layer 4</span>
+      <span class="layer-name">Commercial Layer — How the platform earns</span>
+    </div>
+    <div class="cards cards-4">
+      <div class="card" data-key="b2c">
+        <div class="card-accent" style="background:var(--gold)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Personal / Parent Account Subscriptions (B2C)</div>
+        <div class="card-sub">Premium pathway reports &amp; expert content for swimmer families</div>
+      </div>
+      <div class="card" data-key="b2b">
+        <div class="card-accent" style="background:var(--gold)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Club &amp; Association Tiers (B2B)</div>
+        <div class="card-sub">Club subscriptions, member payments &amp; coach access levels</div>
+      </div>
+      <div class="card" data-key="datalicensing">
+        <div class="card-accent" style="background:var(--gold)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">Data Export &amp; Licensing</div>
+        <div class="card-sub">Anonymised national datasets sold to research &amp; commercial partners</div>
+      </div>
+      <div class="card" data-key="hplicensing">
+        <div class="card-accent" style="background:var(--gold)"></div>
+        <div class="card-icon"></div>
+        <div class="card-title">HP Licensing Module</div>
+        <div class="card-sub">SPARTA II &amp; Australian coaching IP licensed to international federations</div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /print-diagram-inner -->
+  </div><!-- /print-diagram -->
+
+  <!-- ── INFRASTRUCTURE BAND (print: page 2) ─────────── -->
+  <div class="print-infra">
+    <header class="infra-main-head">
+      <h2 class="infra-main-title">Infrastructure <em>&amp; prototype stack</em></h2>
+      <p class="infra-main-desc">Security posture, Privacy Act alignment, and the technologies that power the current AusSWIM (SWIMAUS) prototype.</p>
+    </header>
+  <div class="infra-wrap">
+    <section class="infra-block" aria-labelledby="infra-block-infra">
+      <div class="infra-block-head">
+        <h3 class="infra-block-title" id="infra-block-infra">Infrastructure</h3>
+        <span class="infra-block-tag">Cloud Native</span>
+      </div>
+      <div class="infra-grid">
+        <div class="infra-item">
+          <div class="infra-dot"></div>
+          <div class="infra-text">
+            <strong>Role-Based Access Control</strong>
+            <span>Swimmer · parent · coach · club admin · state admin · national admin</span>
+          </div>
+        </div>
+        <div class="infra-item">
+          <div class="infra-dot"></div>
+          <div class="infra-text">
+            <strong>Privacy Act Compliance</strong>
+            <span>Athlete data handled per Privacy Act obligations · access scoped strictly by role · minor data never exported</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="infra-block" aria-labelledby="infra-block-stack">
+      <h3 class="infra-block-title" id="infra-block-stack">Prototype stack (SWIMAUS)</h3>
+      <ul class="infra-stack-list">
+        <li><strong>React 19</strong> + <strong>TypeScript</strong> — UI components and app logic</li>
+        <li><strong>Vite 7</strong> — build tooling · <strong>Tailwind CSS v4</strong> — styling · <strong>React Router DOM v7</strong> — routing</li>
+        <li><strong>Recharts</strong> — data visualisation · <strong>Lucide React</strong> — icons</li>
+        <li><strong>Data layer</strong> — local mock modules + React context; no live backend in this prototype</li>
+      </ul>
+    </section>
+  </div>
+  </div><!-- /print-infra -->
+
+</div><!-- /page -->
+
+</body>
+</html>

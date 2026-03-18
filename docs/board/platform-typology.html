@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AusSWIM Platform Typology</title>
+  <style>
+    :root {
+      --bg: #264559;
+      --bg-card: #2a4256;
+      --border: #4a6d8c;
+      --border-subtle: #35556e;
+      --text: #eef4fc;
+      --text-muted: #ffffff;
+      --accent: #3dd4f9;
+      --success: #52dfa0;
+      --gold: #e8ad52;
+      --arrow: #6aa8cc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #264559;
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+    .page {
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-left: 4px solid var(--accent);
+      padding-left: 1rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.97rem;
+      padding-left: 1.25rem;
+      margin-bottom: 3rem;
+      line-height: 1.55;
+    }
+
+    /* Section headings */
+    .section {
+      margin-bottom: 3.5rem;
+    }
+    .section-label {
+      font-size: 1.45rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+      line-height: 1.15;
+    }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+      line-height: 1.45;
+    }
+
+    /* ── TREE DIAGRAM ─────────────────────────────────────── */
+    .tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .tree-row {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      position: relative;
+      width: 100%;
+    }
+
+    /* connector lines drawn with CSS */
+    .tree-connectors {
+      display: flex;
+      justify-content: center;
+      height: 1.25rem;
+      position: relative;
+    }
+    .tree-connectors::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: var(--arrow);
+    }
+
+    /* horizontal spread connector */
+    .tree-spread {
+      display: flex;
+      justify-content: center;
+      height: 1rem;
+      position: relative;
+    }
+    .tree-spread-inner {
+      position: relative;
+      width: var(--spread-width, 60%);
+      height: 100%;
+      align-self: stretch;
+    }
+    .tree-spread-inner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--arrow);
+    }
+    .tree-spread-inner::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: var(--arrow);
+    }
+
+    /* vertical drops from horizontal bar */
+    .tree-drops {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      position: relative;
+    }
+    .tree-drop-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tree-drop-line::before {
+      content: '';
+      display: block;
+      width: 2px;
+      height: 1rem;
+      background: var(--arrow);
+    }
+
+    /* NODE BOXES */
+    .node {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1.25rem;
+      text-align: center;
+      background: var(--bg-card);
+      min-width: 8rem;
+      position: relative;
+    }
+    .node-root {
+      border-color: var(--accent);
+      border-width: 2px;
+      background: rgba(61,212,249,0.12);
+      min-width: 14rem;
+    }
+    .node-root .node-title { color: var(--accent); }
+
+    .node-layer {
+      min-width: 11rem;
+    }
+    .node-layer-fed  { border-color: var(--gold);    border-width: 2px; background: rgba(232,173,82,0.13); }
+    .node-layer-club { border-color: var(--accent);  border-width: 2px; background: rgba(61,212,249,0.10); }
+    .node-layer-par  { border-color: var(--success); border-width: 2px; background: rgba(82,223,160,0.10); }
+    .node-layer-fed  .node-title { color: var(--gold); }
+    .node-layer-club .node-title { color: var(--accent); }
+    .node-layer-par  .node-title { color: var(--success); }
+
+    .node-leaf {
+      min-width: 9rem;
+      font-size: 0.82rem;
+    }
+
+    .node-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .node-sub {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* ── PERMISSION GRID ─────────────────────────────────── */
+    .perm-grid {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 0.86rem;
+    }
+    .perm-grid th, .perm-grid td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(42,82,122,0.6);
+      text-align: left;
+    }
+    .perm-grid tr:last-child td { border-bottom: 0; }
+    .perm-grid thead { background: rgba(61,212,249,0.1); }
+    .perm-grid th {
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+    .perm-grid td:not(:first-child) { text-align: center; }
+    .perm-grid th:not(:first-child) { text-align: center; }
+    .check { color: var(--success); font-size: 1rem; font-weight: 700; }
+    .dash  { color: #4a7a9b; font-size: 0.95rem; }
+
+    /* ── DATA FLOW ───────────────────────────────────────── */
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-bottom: 1.25rem;
+    }
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.83rem;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .flow-arrow {
+      color: var(--arrow);
+      font-size: 1.1rem;
+      padding: 0 0.4rem;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .flow-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .flow-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── INTEGRATION CARDS ────────────────────────────────── */
+    .int-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      gap: 1rem;
+    }
+    .int-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+    }
+    .int-card-title {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .int-card-pattern {
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .int-card-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* ── REVENUE ALIGNMENT ────────────────────────────────── */
+    .rev-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 0.86rem;
+    }
+    .rev-table th, .rev-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(42,82,122,0.6);
+      text-align: left;
+    }
+    .rev-table tr:last-child td { border-bottom: 0; }
+    .rev-table thead { background: rgba(61,212,249,0.1); }
+    .rev-table th {
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tag-live  { background: rgba(82,223,160,0.18); color: var(--success); border: 1px solid rgba(82,223,160,0.45); }
+    .tag-proto { background: rgba(61,212,249,0.16); color: var(--accent); border: 1px solid rgba(61,212,249,0.42); }
+    .tag-spec  { background: rgba(232,173,82,0.18); color: var(--gold); border: 1px solid rgba(232,173,82,0.45); }
+
+    .bottom-note {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(61,212,249,0.1);
+      border-left: 3px solid var(--accent);
+      font-size: 0.88rem;
+      color: var(--text);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .meta {
+      margin-top: 3rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    /* responsive */
+    @media (max-width: 640px) {
+      .tree-row { gap: 0.75rem; }
+      .node-layer { min-width: 8rem; }
+      .flow { flex-direction: column; align-items: flex-start; }
+      .flow-arrow { transform: rotate(90deg); padding: 0.2rem 0; }
+    }
+
+    /* ── PRINT: landscape, sections intact, flows as atomic blocks ── */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 14mm;
+      }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: var(--bg) !important;
+        color: var(--text) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+      /* Inset frame on every section so content never sits flush to the printable area */
+      .section {
+        border: 1px solid rgba(61, 212, 249, 0.4);
+        border-radius: 10px;
+        padding: 5mm 6mm 6mm;
+        margin-bottom: 5mm;
+        box-sizing: border-box;
+      }
+      .print-doc-header {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid rgba(61, 212, 249, 0.4);
+        border-radius: 10px;
+        padding: 5mm 6mm;
+        margin-bottom: 5mm;
+        box-sizing: border-box;
+      }
+      h1 {
+        font-size: 1.3rem;
+        margin-bottom: 0.35rem;
+        padding-left: 0.75rem;
+      }
+      .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+        padding-left: 1rem;
+        line-height: 1.4;
+      }
+
+      /* Whole section on one page when it fits; otherwise start on next page */
+      .section:not(.section-flows) {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .section-flows {
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+      .flow-print-heading {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        break-after: avoid;
+        margin-bottom: 0.5rem;
+      }
+      .flow-print-group {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 0.85rem;
+      }
+
+      .section-label { font-size: 1.05rem; margin-bottom: 0.25rem; line-height: 1.12; letter-spacing: 0.05em; }
+      .section-title { font-size: 0.75rem; margin-bottom: 0.75rem; line-height: 1.4; }
+
+      .tree { break-inside: avoid; page-break-inside: avoid; }
+      .node { font-size: 0.72rem; }
+      .node-title { font-size: 0.78rem !important; }
+      .node-sub { font-size: 0.65rem !important; line-height: 1.35 !important; }
+      .bottom-note { font-size: 0.68rem; margin-top: 0.75rem !important; }
+
+      .int-grid {
+        gap: 0.5rem;
+        break-inside: auto;
+      }
+      .int-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        padding: 0.65rem 0.75rem;
+      }
+      .int-card-title { font-size: 0.78rem; }
+      .int-card-desc { font-size: 0.65rem; line-height: 1.35; }
+
+      .flow {
+        flex-wrap: wrap;
+        gap: 0.2rem 0.15rem;
+      }
+      .flow-step {
+        font-size: 0.62rem;
+        padding: 0.35rem 0.45rem;
+      }
+      .flow-arrow { font-size: 0.65rem; padding: 0 0.1rem; }
+      .flow-label { font-size: 0.72rem; margin-top: 0.5rem !important; }
+      .flow-desc { font-size: 0.65rem; }
+
+      table.perm-grid,
+      table.rev-table {
+        font-size: 0.68rem;
+        break-inside: auto;
+      }
+      table.perm-grid thead,
+      table.rev-table thead {
+        display: table-header-group;
+      }
+      table.perm-grid tbody tr,
+      table.rev-table tbody tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      table.perm-grid th,
+      table.perm-grid td,
+      table.rev-table th,
+      table.rev-table td {
+        padding: 0.35rem 0.45rem;
+      }
+
+      .meta {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-top: 1.5rem;
+        font-size: 0.72rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="print-doc-header">
+  <h1>AusSWIM Platform Typology</h1>
+  <p class="subtitle">System architecture, roles, data flows, and commercial alignment. For internal/board reference.</p>
+  </div>
+
+  <!-- ── 1. SYSTEM STRUCTURE ────────────────────────────── -->
+  <div class="section">
+    <div class="section-label">1 — System structure</div>
+    <div class="section-title">One platform. Three distinct surfaces.</div>
+
+    <div class="tree">
+
+      <!-- Root -->
+      <div class="tree-row">
+        <div class="node node-root">
+          <div class="node-title">SWIMAUS Platform</div>
+          <div class="node-sub">One auth — three account types</div>
+        </div>
+      </div>
+
+      <!-- Drop to spread -->
+      <div class="tree-connectors"></div>
+      <div class="tree-spread">
+        <div class="tree-spread-inner" style="width: 70%;"></div>
+      </div>
+
+      <!-- Three layer nodes -->
+      <div class="tree-row">
+        <div class="tree-drop-line">
+          <div class="node node-layer node-layer-fed">
+            <div class="node-title">Federation</div>
+            <div class="node-sub">Swimming Australia · Data intelligence<br>Restricted access · potential payments required · very much still in development</div>
+          </div>
+        </div>
+        <div class="tree-drop-line">
+          <div class="node node-layer node-layer-club">
+            <div class="node-title">Club / Team</div>
+            <div class="node-sub">Club admins & coaches<br>Management SaaS</div>
+          </div>
+        </div>
+        <div class="tree-drop-line">
+          <div class="node node-layer node-layer-par">
+            <div class="node-title">Parent / Member</div>
+            <div class="node-sub">Families & swimmers<br>Consumer subscription</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drop to leaf level -->
+      <div style="display:flex; justify-content:center; gap:1.5rem; width:100%;">
+        <!-- Federation leaves -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+          <div class="tree-connectors"></div>
+          <div style="display:flex; gap:1rem;">
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">National dashboard</div>
+                <div class="node-sub">x swimmers nationally<br>Filter by state / stage</div>
+              </div>
+            </div>
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">Insight categories</div>
+                <div class="node-sub">Participation, talent,<br>commercial, geographic</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Club leaves -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+          <div class="tree-connectors"></div>
+          <div style="display:flex; gap:1rem;">
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">Roster & classes</div>
+                <div class="node-sub">Swimmers, enrolment,<br>instructors, compliance</div>
+              </div>
+            </div>
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">Meets & payments</div>
+                <div class="node-sub">Result uploads,<br>fee records, history</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parent leaves -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+          <div class="tree-connectors"></div>
+          <div style="display:flex; gap:1rem;">
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">Swimmer profile</div>
+                <div class="node-sub">Pathway stage,<br>meet results, insights</div>
+              </div>
+            </div>
+            <div class="tree-drop-line">
+              <div class="node node-leaf">
+                <div class="node-title">Pathway & calendar</div>
+                <div class="node-sub">Program discovery,<br>events, services</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 2. PATHWAY SPINE ───────────────────────────────── -->
+  <div class="section">
+    <div class="section-label">2 — Classification spine</div>
+    <div class="section-title">The pathway stage runs through every layer.</div>
+
+    <div class="tree">
+      <div class="tree-row">
+        <div class="node node-root" style="min-width:18rem;">
+          <div class="node-title">Pathway Stage</div>
+          <div class="node-sub">Every swimmer, class, insight, and recommendation is keyed to a stage</div>
+        </div>
+      </div>
+      <div class="tree-connectors"></div>
+      <div class="tree-spread"><div class="tree-spread-inner" style="width:90%;"></div></div>
+      <div class="tree-row" style="flex-wrap:wrap;">
+        <div class="tree-drop-line"><div class="node node-leaf"><div class="node-title">Recreation</div></div></div>
+        <div class="tree-drop-line"><div class="node node-leaf"><div class="node-title">Learn-to-Swim</div></div></div>
+        <div class="tree-drop-line"><div class="node node-leaf"><div class="node-title">Junior Squad</div></div></div>
+        <div class="tree-drop-line"><div class="node node-leaf"><div class="node-title">Competitive Club</div></div></div>
+        <div class="tree-drop-line"><div class="node node-leaf"><div class="node-title">Elite</div></div></div>
+      </div>
+    </div>
+    <p class="bottom-note">Used by: <strong>ClubSwimmer</strong> (roster filtering) · <strong>SwimClass</strong> (class type) · <strong>Insights</strong> (content selection) · <strong>Pathway</strong> (program & service recommendations) · <strong>Federation dashboard</strong> (funnel & filter)</p>
+  </div>
+
+  <!-- ── 3. DATA MODEL ───────────────────────────────────── -->
+  <div class="section">
+    <div class="section-label">3 — Data model</div>
+    <div class="section-title">Key entities and how they connect.</div>
+
+    <div class="tree">
+      <div class="tree-row" style="gap:1rem; flex-wrap:wrap;">
+        <!-- Swimmer -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--success);">ClubSwimmer</div>
+          <div class="node-sub">id · name · DOB<br>classId → SwimClass<br>pathwayStageId<br>talentFlags[]<br>pastClubs[]</div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;color:var(--border);font-size:1.2rem;">→</div>
+        <!-- Class -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--accent);">SwimClass</div>
+          <div class="node-sub">id · name · classType<br>coachId · capacity<br>pathwayStageId<br>trainingDays</div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;color:var(--border);font-size:1.2rem;">→</div>
+        <!-- Instructor -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--gold);">ClubInstructor</div>
+          <div class="node-sub">id · memberNumber<br>classIds[]<br>bankDetailsComplete<br>wwccComplete</div>
+        </div>
+      </div>
+
+      <div style="height:1.5rem; display:flex; align-items:center; justify-content:flex-start; padding-left:5.5rem;">
+        <div style="width:1px; height:100%; background:var(--border);"></div>
+      </div>
+
+      <div class="tree-row" style="gap:1rem; flex-wrap:wrap;">
+        <!-- StatUpload -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--success);">StatUpload</div>
+          <div class="node-sub">swimmerId · date<br>eventMetric · value<br>source: meet / training<br>/ assessment / manual<br>→ API auto-feed from meets</div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;color:var(--border);font-size:1.2rem;">+</div>
+        <!-- Payment -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--accent);">PaymentRecord</div>
+          <div class="node-sub">swimmerId · classId<br>feeType · amount<br>dueDate · paidDate<br>status</div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;color:var(--border);font-size:1.2rem;">+</div>
+        <!-- Federation agg -->
+        <div class="node node-leaf" style="min-width:11rem; text-align:left;">
+          <div class="node-title" style="color:var(--gold);">FederationMetrics</div>
+          <div class="node-sub">Aggregates only — no PII<br>x swimmers nationally<br>retention · talent flags<br>stage funnel · commercial</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. ROLES & PERMISSIONS ─────────────────────────── -->
+  <div class="section">
+    <div class="section-label">4 — Roles & permissions</div>
+    <div class="section-title">What each account type can see and do.</div>
+
+    <table class="perm-grid">
+      <thead>
+        <tr>
+          <th style="min-width:14rem;">Capability</th>
+          <th>Parent / Personal</th>
+          <th>Club</th>
+          <th>Federation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Own swimmer profile &amp; pathway</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td></tr>
+        <tr><td>Multi-swimmer family account</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td></tr>
+        <tr><td>Insights subscription &amp; meet results</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Product promotion (view / targeted placements)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Club roster management</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+        <tr><td>Class &amp; instructor management</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+        <tr><td>Upload meet / training results</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+        <tr><td>Talent flag swimmers</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+        <tr><td>Payment records &amp; fee management</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+        <tr><td>National participation analytics</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        <tr><td>Talent identification &amp; HP signals</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        <tr><td>Commercial &amp; sponsorship data</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        <tr><td>Multi-dimension national filters</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 5. INTEGRATION POINTS ──────────────────────────── -->
+  <div class="section">
+    <div class="section-label">5 — Integration points</div>
+    <div class="section-title">External systems the platform connects to.</div>
+
+    <div class="int-grid">
+      <div class="int-card">
+        <div class="int-card-title">Swim Central</div>
+        <div class="int-card-pattern">Read / webhook sync</div>
+        <div class="int-card-desc">National registration records, member IDs, club affiliations. Platform subscribes — does not write back.</div>
+      </div>
+      <div class="int-card">
+        <div class="int-card-title">Competition Upload</div>
+        <div class="int-card-pattern">State CSV → Swim Central → national automation</div>
+        <div class="int-card-desc">Competition results via Swim Central submissions. Short-term: CSV import from state associations. Long-term: automated ingestion as results are submitted nationally.</div>
+      </div>
+      <div class="int-card">
+        <div class="int-card-title">HP / Assessment systems</div>
+        <div class="int-card-pattern">Subscription + access gate</div>
+        <div class="int-card-desc">Biomechanics, race analysis, technique assessments. Gated by subscription tier — lower tiers see prompt only.</div>
+      </div>
+      <div class="int-card">
+        <div class="int-card-title">Online Payments</div>
+        <div class="int-card-pattern">Card linked to account</div>
+        <div class="int-card-desc">Consumer subscription ($x/mo) and club fee collection. Card saved once to account — payments and fee transactions happen seamlessly without re-entering details.</div>
+      </div>
+      <div class="int-card">
+        <div class="int-card-title">AusSwim Database / Accreditation</div>
+        <div class="int-card-pattern">Directory lookup + webhook</div>
+        <div class="int-card-desc">Instructor member numbers, accreditation levels, WWCC status. Club adds instructor by member number; platform verifies.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. KEY DATA FLOWS (each flow group stays on one page when possible) ── -->
+  <div class="section section-flows">
+    <div class="flow-print-heading">
+      <div class="section-label">6 — Key data flows</div>
+    </div>
+
+    <div class="flow-print-group">
+    <p class="flow-label">A — Swimmer registration</p>
+    <div class="flow">
+      <div class="flow-step">Sign up</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Select account type</div><div class="flow-arrow">→</div>
+      <div class="flow-step">4-step onboarding</div><div class="flow-arrow">→</div>
+      <div class="flow-step">SwimmerProfile created</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Member ID generated</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Session persisted</div>
+    </div>
+    </div>
+
+    <div class="flow-print-group">
+    <p class="flow-label" style="margin-top:1.25rem;">B — Competition result → talent signal</p>
+    <div class="flow">
+      <div class="flow-step">Competition result (Swim Central / state CSV)</div><div class="flow-arrow">→</div>
+      <div class="flow-step">StatUpload created</div><div class="flow-arrow">→</div>
+      <div class="flow-step">latestStatDate updated</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Coach reviews swimmer detail</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Talent flag applied</div><div class="flow-arrow">→</div>
+      <div class="flow-step">[Future] Federation HP signal surfaced</div>
+    </div>
+    </div>
+
+    <div class="flow-print-group">
+    <p class="flow-label" style="margin-top:1.25rem;">Ca — Parent progress report (family-facing)</p>
+    <p class="flow-desc">Coach-triggered report for one swimmer: platform composes progress from club data and delivers it to the parent. Consumer/parent visibility only.</p>
+    <div class="flow">
+      <div class="flow-step">Club uploads results &amp; flags</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Platform composes report</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Coach reviews &amp; sends</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Parent receives via email</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Visible in Insights Overview</div>
+    </div>
+    </div>
+
+    <div class="flow-print-group">
+    <p class="flow-label" style="margin-top:1.25rem;">Cb — Swimming Australia database (national layer)</p>
+    <p class="flow-desc">Club and pathway data is recognised and aggregated into the Swimming Australia database. Federation views national metrics; no individual PII at this layer.</p>
+    <div class="flow">
+      <div class="flow-step">Club &amp; pathway data from platform</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Aggregated into Swimming Australia database</div><div class="flow-arrow">→</div>
+      <div class="flow-step">Federation dashboard &amp; reporting</div><div class="flow-arrow">→</div>
+      <div class="flow-step">National metrics, talent pipeline, compliance</div>
+    </div>
+    </div>
+
+  </div>
+
+  <!-- ── 7. COMMERCIAL ALIGNMENT ────────────────────────── -->
+  <div class="section">
+    <div class="section-label">7 — Commercial alignment</div>
+    <div class="section-title">How the architecture supports each revenue layer.</div>
+
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Revenue stream</th>
+          <th>Mechanism</th>
+          <th>Architecture hook</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Parent subscription</strong></td>
+          <td>$x / month</td>
+          <td>isPremiumTier · ServiceTier enum · SubscribeToExpertData gate</td>
+        </tr>
+        <tr>
+          <td><strong>Club base subscription</strong></td>
+          <td>Per-club SaaS fee</td>
+          <td>Full club management surface: roster, classes, payments, uploads</td>
+        </tr>
+        <tr>
+          <td><strong>Club Premium tier</strong></td>
+          <td>Upsell for analytics &amp; benchmarking</td>
+          <td>isPremiumTier toggle · Pro Plan Prototype content spec</td>
+        </tr>
+        <tr>
+          <td><strong>Member payment fees</strong></td>
+          <td>Transaction / convenience fee</td>
+          <td>ClubPayments · PaymentRecord · fee types · payment processor</td>
+        </tr>
+        <tr>
+          <td><strong>Federation data license</strong></td>
+          <td>Annual license to SA</td>
+          <td>federationDashboardData · INSIGHT_CATEGORIES · section pages</td>
+        </tr>
+        <tr>
+          <td><strong>Sponsorship data products</strong></td>
+          <td>Commercial intel to partners — similar to Auskick, Speedo Learn-to-Swim</td>
+          <td>COMMERCIAL_METRICS · SPONSORSHIP_SUMMARY · category pages</td>
+        </tr>
+        <tr>
+          <td><strong>Product promotion &amp; advertising</strong></td>
+          <td>Targeted placements to swimmers &amp; families</td>
+          <td>Pathway stage · age group · program type — precise audience segmentation at every stage</td>
+        </tr>
+        <tr>
+          <td><strong>High-performance to grassroots</strong></td>
+          <td>HP content, tools &amp; services delivered to recreational &amp; junior swimmers</td>
+          <td>Pathway stage spine connects elite data (biomechanics, race analysis, benchmarks) downward to club &amp; learn-to-swim levels via tiered access</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+</div>
+</body>
+</html>

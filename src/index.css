@@ -1,0 +1,169 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #031B34;
+  --color-bg-elevated: #06294A;
+  --color-card: #0D3558;
+  --color-border: #1D4C73;
+  --color-text-primary: #F4F8FC;
+  --color-text-secondary: #D7E6F2;
+  --color-text-muted: #8FB2C9;
+  --color-accent: #35C7F3;
+  --color-accent-bright: #55D6FF;
+  --color-success: #43E0D0;
+  --color-success-soft: #7CE9DE;
+  --color-teal: #00C2A8;
+  --color-premium: #D89A3D;
+  --color-premium-bright: #E7AE52;
+
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+
+  --radius-card: 0.75rem;
+  --radius-button: 0.5rem;
+  --shadow-card: 0 4px 12px -2px rgb(0 0 0 / 0.25), 0 2px 6px -2px rgb(0 0 0 / 0.15);
+  --shadow-card-hover: 0 8px 24px -4px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(53 199 243 / 0.08);
+  --shadow-glow: 0 0 24px -4px rgb(53 199 243 / 0.15);
+
+  --space-section: 1.5rem;
+  --space-card: 1.25rem;
+  --space-page: 1.5rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background: linear-gradient(165deg, #031B34 0%, #051d38 40%, #06294A 100%);
+    background-attachment: fixed;
+    color: var(--color-text-primary);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgb(53 199 243 / 0.06), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 50%, rgb(53 199 243 / 0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+
+  h1 {
+    font-size: 1.875rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 2.25rem;
+    }
+  }
+
+  /* Primary accent buttons – used across app */
+  .btn-primary {
+    @apply rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-all duration-200;
+    background: linear-gradient(180deg, #55D6FF 0%, #35C7F3 100%);
+    color: #031B34;
+    box-shadow: 0 2px 8px -2px rgb(53 199 243 / 0.4);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px -2px rgb(53 199 243 / 0.5);
+    transform: translateY(-1px);
+  }
+}
+
+/* Federation theme: black colour scheme with blue highlights */
+[data-theme="federation"] {
+  --color-bg: #0a0a0a;
+  --color-bg-elevated: #141414;
+  --color-card: #1a1a1a;
+  --color-border: #2d2d2d;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #e5e5e5;
+  --color-text-muted: #a3a3a3;
+  --color-accent: #35C7F3;
+  --color-accent-bright: #55D6FF;
+  --color-success: #22c55e;
+  --color-success-soft: #4ade80;
+  --color-premium: #eab308;
+  --color-premium-bright: #facc15;
+  --shadow-card: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 2px 6px -2px rgb(0 0 0 / 0.2);
+  --shadow-card-hover: 0 8px 24px -4px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(53 199 243 / 0.2);
+  --shadow-glow: 0 0 24px -4px rgb(53 199 243 / 0.15);
+  background: #0a0a0a;
+  min-height: 100vh;
+}
+
+[data-theme="federation"] .btn-primary {
+  background: linear-gradient(180deg, #fafafa 0%, #e5e5e5 100%);
+  color: #0a0a0a;
+  box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.3);
+}
+[data-theme="federation"] .btn-primary:hover {
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.4);
+}
+
+/* Light board-style theme: only Federation dashboard + section routes (see AppShell) */
+.federation-page-light {
+  --color-bg: #f8f9fb;
+  --color-bg-elevated: #ffffff;
+  --color-card: #ffffff;
+  --color-border: #d0dbe8;
+  --color-text-primary: #0f1c30;
+  --color-text-secondary: #2d3d52;
+  --color-text-muted: #5c6d80;
+  --color-accent: #0099cc;
+  --color-accent-bright: #00b4e6;
+  --color-success: #0d9488;
+  --color-success-soft: #14b8a6;
+  --color-premium: #b45309;
+  --color-premium-bright: #d97706;
+  --shadow-card: 0 1px 3px rgb(15 28 48 / 0.06), 0 1px 2px rgb(15 28 48 / 0.04);
+  --shadow-card-hover: 0 4px 14px rgb(15 28 48 / 0.08);
+  --shadow-glow: 0 0 20px rgb(0 153 204 / 0.12);
+  background-color: #f8f9fb;
+  min-height: 100%;
+}
+
+.federation-page-light .btn-primary {
+  background: linear-gradient(180deg, #00b4e6 0%, #0099cc 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px -2px rgb(0 153 204 / 0.35);
+}
+
+.federation-page-light .btn-primary:hover {
+  box-shadow: 0 4px 14px -2px rgb(0 153 204 / 0.45);
+}
+
+/* Light sidebar on federation dashboard + sections (matches main column) */
+.federation-sidebar-light {
+  --color-bg: #f8f9fb;
+  --color-bg-elevated: #ffffff;
+  --color-card: #eef2f7;
+  --color-border: #d0dbe8;
+  --color-text-primary: #0f1c30;
+  --color-text-secondary: #2d3d52;
+  --color-text-muted: #5c6d80;
+  --color-accent: #0099cc;
+  --color-accent-bright: #00b4e6;
+  background-color: #ffffff;
+  background-image: none;
+}
