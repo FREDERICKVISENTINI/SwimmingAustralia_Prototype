@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import { NearbyProgramCard } from '../components/pathway/NearbyProgramCard'
@@ -12,6 +12,8 @@ import { PATHWAY_STAGES } from '../theme/tokens'
 import { getPathwayStageContent } from '../data/pathwayStageContent'
 import { getStagePromo } from '../data/pathwayStagePromo'
 
+type PathwayTabId = 'programs' | 'opportunities' | 'services'
+
 export function Pathway() {
   const { accountType, swimmerProfile, setPathwayStage } = useApp()
   const initialStageId =
@@ -21,6 +23,24 @@ export function Pathway() {
 
   const [selectedStageId, setSelectedStageId] = useState<string>(initialStageId)
   const [openStagePanelId, setOpenStagePanelId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<PathwayTabId>('programs')
+
+  const isRecreation = selectedStageId === 'recreation'
+
+  const tabs: { id: PathwayTabId; label: string; subtitle: string }[] = [
+    { id: 'programs', label: 'Programs near you', subtitle: 'Relevant programs, clubs, and squads for this stage.' },
+    { id: 'opportunities', label: 'Upcoming opportunities', subtitle: 'Trials, meets, camps, and events relevant to this stage.' },
+    ...(!isRecreation
+      ? [{ id: 'services' as PathwayTabId, label: 'HP services', subtitle: 'Development support that grows with your stage in the pathway.' }]
+      : []),
+  ]
+
+  // If the active tab is hidden (recreation hides services), fall back to first tab
+  useEffect(() => {
+    if (!tabs.some((t) => t.id === activeTab)) {
+      setActiveTab('programs')
+    }
+  }, [isRecreation, activeTab])
 
   const handleStageChange = (stageId: string) => {
     setSelectedStageId(stageId)
@@ -41,6 +61,8 @@ export function Pathway() {
     ? [swimmerProfile.firstName, swimmerProfile.lastName].filter(Boolean).join(' ') || 'Swimmer'
     : ''
 
+  const activeTabMeta = tabs.find((t) => t.id === activeTab) ?? tabs[0]
+
   return (
     <PageSection
       title="Pathway"
@@ -57,78 +79,83 @@ export function Pathway() {
       )}
 
       {content && (
-        <div className="mt-8 space-y-10">
-          {/* A. Programs Near You */}
-          <section>
-            <h2 className="font-display text-lg font-semibold text-text-primary md:text-xl">
-              Programs near you
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
-              Relevant programs, clubs, and squads for this stage.
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {content.programsNearYou.map((program) => (
-                <NearbyProgramCard key={program.id} program={program} />
-              ))}
+        <div className="mt-8">
+          {/* Tab bar */}
+          <div
+            className="border-b border-border bg-bg-elevated/50"
+            role="tablist"
+            aria-label="Pathway sections"
+          >
+            <div className="flex gap-0 overflow-x-auto">
+              {tabs.map(({ id, label }) => {
+                const isActive = (activeTabMeta?.id ?? 'programs') === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTab(id)}
+                    className={`shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'border-accent text-accent'
+                        : 'border-transparent text-text-muted hover:border-border hover:text-text-secondary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
             </div>
-          </section>
+          </div>
 
-          {/* B. Upcoming Opportunities */}
-          <section>
-            <h2 className="font-display text-lg font-semibold text-text-primary md:text-xl">
-              Upcoming opportunities
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
-              Trials, meets, camps, and events relevant to this stage.
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {content.upcomingOpportunities.map((opportunity) => (
-                <OpportunityCard
-                  key={opportunity.id}
-                  opportunity={opportunity}
-                />
-              ))}
-            </div>
-          </section>
+          {/* Tab subtitle */}
+          <p className="mt-4 text-sm text-text-muted">{activeTabMeta?.subtitle}</p>
 
-          {/* C. Recommended High-Performance Services (hidden for Recreation) */}
-          {selectedStageId !== 'recreation' && (
-            <section>
-              <h2 className="font-display text-lg font-semibold text-text-primary md:text-xl">
-                Recommended high-performance services
-              </h2>
-              <p className="mt-1 text-sm text-text-muted">
-                Development support that grows with your stage in the pathway.
-              </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {content.recommendedServices.map((service) => (
-                  <ServiceRecommendationCard
-                    key={service.id}
-                    service={service}
-                  />
+          {/* Tab content */}
+          <div className="mt-4">
+            {activeTab === 'programs' && (
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {content.programsNearYou.map((program) => (
+                  <NearbyProgramCard key={program.id} program={program} />
                 ))}
               </div>
-            </section>
-          )}
+            )}
 
-          {/* D. Next Step in Pathway (hidden for Recreation) */}
-          {selectedStageId !== 'recreation' && (
-            <section>
+            {activeTab === 'opportunities' && (
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {content.upcomingOpportunities.map((opportunity) => (
+                  <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'services' && !isRecreation && (
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {content.recommendedServices.map((service) => (
+                  <ServiceRecommendationCard key={service.id} service={service} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Next Step & Sponsorship — always below tabs */}
+          {!isRecreation && content.nextStep && (
+            <div className="mt-10">
               <NextStepCard
                 nextStep={content.nextStep}
                 onCtaClick={() => setOpenStagePanelId(content.nextStep.stageId)}
               />
-            </section>
+            </div>
           )}
 
-          {/* Elite: Partnerships & sponsorship */}
           {content.sponsorshipSection && (
-            <section>
+            <div className="mt-8">
               <SponsorshipCard
                 title={content.sponsorshipSection.title}
                 items={content.sponsorshipSection.items}
               />
-            </section>
+            </div>
           )}
         </div>
       )}
