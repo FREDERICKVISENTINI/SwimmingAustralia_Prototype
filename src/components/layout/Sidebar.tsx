@@ -40,8 +40,10 @@ const clubNavItems = [
 export function Sidebar() {
   const { accountType } = useApp()
   const { pathname } = useLocation()
+  const isFederation = accountType === 'federation'
   const federationLightSidebar =
-    accountType === 'federation' && isFederationLightThemeRoute(pathname)
+    isFederation && isFederationLightThemeRoute(pathname)
+  const appLightSidebar = accountType != null && !isFederation
 
   const items =
     accountType === 'club'
@@ -63,7 +65,9 @@ export function Sidebar() {
 
   const asideClass = federationLightSidebar
     ? 'federation-sidebar-light fixed left-0 top-0 z-30 flex h-screen w-52 flex-col border-r border-border md:w-56'
-    : 'fixed left-0 top-0 z-30 flex h-screen w-52 flex-col border-r border-border md:w-56 bg-bg-elevated/80 backdrop-blur-sm bg-gradient-to-b from-bg-elevated to-bg'
+    : appLightSidebar
+      ? 'app-sidebar-light fixed left-0 top-0 z-30 flex h-screen w-52 flex-col border-r border-border md:w-56'
+      : 'fixed left-0 top-0 z-30 flex h-screen w-52 flex-col border-r border-border md:w-56 bg-bg-elevated/80 backdrop-blur-sm bg-gradient-to-b from-bg-elevated to-bg'
 
   const navActive = (isActive: boolean) =>
     isActive
@@ -100,7 +104,7 @@ export function Sidebar() {
             end={to === ROUTES.app.federationDashboard || to === ROUTES.app.profile}
             className={({ isActive }) =>
               `flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                federationLightSidebar ? navActive(isActive) : navActiveDark(isActive)
+                federationLightSidebar || appLightSidebar ? navActive(isActive) : navActiveDark(isActive)
               }`
             }
           >
