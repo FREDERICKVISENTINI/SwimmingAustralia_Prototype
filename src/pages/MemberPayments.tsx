@@ -3,7 +3,17 @@ import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import { Card } from '../components/ui/Card'
 import { Modal } from '../components/ui/Modal'
-import { CreditCard, Building2, Check } from 'lucide-react'
+import { CreditCard, Building2, Check, ArrowLeft, Plus, Trash2 } from 'lucide-react'
+
+type View = 'main' | 'manage-cards'
+
+type SavedCard = {
+  id: string
+  brand: string
+  last4: string
+  expiry: string
+  isDefault: boolean
+}
 
 /** Mock fee item for member (prototype: no backend). */
 type MemberFeeItem = {
@@ -53,6 +63,7 @@ export function MemberPayments() {
   const [paySuccessOpen, setPaySuccessOpen] = useState(false)
   const [payModalItem, setPayModalItem] = useState<MemberFeeItem | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [view, setView] = useState<View>('main')
 
   // Payment form state
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('saved-card')
@@ -63,6 +74,14 @@ export function MemberPayments() {
   const [bsb, setBsb] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
+
+  // Saved cards state
+  const [savedCards, setSavedCards] = useState<SavedCard[]>([
+    { id: 'card-1', brand: 'Visa', last4: '4242', expiry: '09/27', isDefault: true },
+  ])
+  const [showAddCard, setShowAddCard] = useState(false)
+  const [newCard, setNewCard] = useState({ number: '', name: '', expiry: '', cvc: '' })
+  const [addCardSuccess, setAddCardSuccess] = useState(false)
 
   const dueItems = feeItems.filter((f) => f.status === 'due' || f.status === 'overdue')
   const totalDue = dueItems.reduce((s, f) => s + f.amount, 0)
@@ -91,10 +110,185 @@ export function MemberPayments() {
     }, 900)
   }
 
+  const handleAddCard = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCard.number || !newCard.name || !newCard.expiry || !newCard.cvc) return
+    const last4 = newCard.number.replace(/\D/g, '').slice(-4)
+    setSavedCards((prev) => [
+      ...prev,
+      { id: `card-${Date.now()}`, brand: 'Card', last4, expiry: newCard.expiry, isDefault: false },
+    ])
+    setNewCard({ number: '', name: '', expiry: '', cvc: '' })
+    setShowAddCard(false)
+    setAddCardSuccess(true)
+    setTimeout(() => setAddCardSuccess(false), 3000)
+  }
+
+  const handleRemoveCard = (id: string) => {
+    setSavedCards((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  const handleSetDefault = (id: string) => {
+    setSavedCards((prev) => prev.map((c) => ({ ...c, isDefault: c.id === id })))
+  }
+
+  // ── Manage cards view ────────────────────────────────────────────────────
+  if (view === 'manage-cards') {
+    return (
+      <PageSection
+        title="Payment details"
+        subtitle="Manage your saved cards and billing information."
+        headerAction={
+          <button
+            type="button"
+            onClick={() => { setView('main'); setShowAddCard(false) }}
+            className="flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-accent/40 hover:text-accent"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to payments
+          </button>
+        }
+      >
+        <div className="max-w-xl space-y-6">
+          {/* Saved cards */}
+          <div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-muted">Saved cards</h2>
+            {addCardSuccess && (
+              <div className="mb-3 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-2.5 text-sm text-success">
+                <Check className="h-4 w-4" /> Card added successfully.
+              </div>
+            )}
+            <div className="space-y-2">
+              {savedCards.length === 0 && (
+                <Card><p className="text-sm text-text-muted">No saved cards. Add one below.</p></Card>
+              )}
+              {savedCards.map((card) => (
+                <Card key={card.id} className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-5 w-5 shrink-0 text-text-muted" />
+                    <div>
+                      <p className="text-sm font-medium text-text-primary">
+                        {card.brand} ending ···· {card.last4}
+                      </p>
+                      <p className="text-xs text-text-muted">Expires {card.expiry}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {card.isDefault ? (
+                      <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-medium text-accent">Default</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSetDefault(card.id)}
+                        className="text-xs text-text-muted underline-offset-2 hover:text-accent hover:underline"
+                      >
+                        Set default
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCard(card.id)}
+                      disabled={card.isDefault}
+                      className="rounded p-1 text-text-muted transition-colors hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Remove card"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Add new card */}
+          {!showAddCard ? (
+            <button
+              type="button"
+              onClick={() => setShowAddCard(true)}
+              className="flex items-center gap-2 rounded-[var(--radius-button)] border border-dashed border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-accent/50 hover:text-accent"
+            >
+              <Plus className="h-4 w-4" /> Add new card
+            </button>
+          ) : (
+            <form onSubmit={handleAddCard} className="rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-[var(--shadow-card)] space-y-4">
+              <h3 className="text-sm font-semibold text-text-primary">New card</h3>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-text-muted">Card number</label>
+                <input
+                  type="text"
+                  value={newCard.number}
+                  onChange={(e) => setNewCard((p) => ({ ...p, number: e.target.value.replace(/\D/g, '').slice(0, 16) }))}
+                  placeholder="1234 5678 9012 3456"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-text-muted">Name on card</label>
+                <input
+                  type="text"
+                  value={newCard.name}
+                  onChange={(e) => setNewCard((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Full name"
+                  className={inputClass}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-muted">Expiry</label>
+                  <input
+                    type="text"
+                    value={newCard.expiry}
+                    onChange={(e) => setNewCard((p) => ({ ...p, expiry: e.target.value }))}
+                    placeholder="MM/YY"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-muted">CVC</label>
+                  <input
+                    type="text"
+                    value={newCard.cvc}
+                    onChange={(e) => setNewCard((p) => ({ ...p, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                    placeholder="123"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button type="submit" className="rounded-[var(--radius-button)] bg-accent px-4 py-2 text-sm font-medium text-bg hover:bg-accent-bright">
+                  Save card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddCard(false); setNewCard({ number: '', name: '', expiry: '', cvc: '' }) }}
+                  className="rounded-[var(--radius-button)] border border-border px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
+                >
+                  Cancel
+                </button>
+              </div>
+              <p className="text-xs text-text-muted">Prototype only — no real card is stored.</p>
+            </form>
+          )}
+        </div>
+      </PageSection>
+    )
+  }
+
+  // ── Main payments view ───────────────────────────────────────────────────
   return (
     <PageSection
       title="Payments"
       subtitle="View and pay fees for your swimmers."
+      headerAction={
+        <button
+          type="button"
+          onClick={() => setView('manage-cards')}
+          className="flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-accent/40 hover:text-accent"
+        >
+          <CreditCard className="h-3.5 w-3.5" />
+          Manage cards
+        </button>
+      }
     >
       {dueItems.length === 0 ? (
         <Card>
@@ -189,15 +383,23 @@ export function MemberPayments() {
 
           <form onSubmit={handleConfirmPayment} className="space-y-4">
             {paymentMethod === 'saved-card' && (
-              <div className="rounded-lg border border-border/80 bg-bg-elevated px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-5 w-5 text-text-muted" />
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">Visa ending ···· 4242</p>
-                    <p className="text-xs text-text-muted">Expires 09/27</p>
+              <div className="space-y-2">
+                {savedCards.length === 0 ? (
+                  <p className="text-sm text-text-muted">No saved cards. Add one via <button type="button" onClick={() => { setPayModalItem(null); setView('manage-cards') }} className="text-accent underline">Manage cards</button>.</p>
+                ) : savedCards.map((card) => (
+                  <div key={card.id} className="rounded-lg border border-border/80 bg-bg-elevated px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="h-5 w-5 text-text-muted" />
+                      <div>
+                        <p className="text-sm font-medium text-text-primary">{card.brand} ending ···· {card.last4}</p>
+                        <p className="text-xs text-text-muted">Expires {card.expiry}</p>
+                      </div>
+                    </div>
+                    {card.isDefault && (
+                      <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-medium text-accent">Default</span>
+                    )}
                   </div>
-                </div>
-                <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-medium text-accent">Default</span>
+                ))}
               </div>
             )}
 
