@@ -1,4 +1,4 @@
-import type { SwimClass, ClubSwimmer, PaymentRecord, StatUpload, ClubInstructor } from '../types/club'
+import type { SwimClass, ClubSwimmer, PaymentRecord, StatUpload, ClubInstructor, ClubEvent, EventRegistration } from '../types/club'
 
 export const DEMO_CLASSES: SwimClass[] = [
   {
@@ -125,6 +125,136 @@ export const DEMO_INSTRUCTORS: ClubInstructor[] = [
     accreditationLevel: 'Learn-to-Swim',
     notes: 'WWCC verification pending. Assists with LTS Stage 3.',
   },
+]
+
+// ─── Events & Registrations ───────────────────────────────────────────────────
+// Dates are set relative to April–May 2026 so they stay "upcoming" in the demo.
+
+export const DEMO_EVENTS: ClubEvent[] = [
+  {
+    id: 'evt-1',
+    title: 'Junior Squad Training — Term 2 Kick-off',
+    eventType: 'training-session',
+    description: 'First session of Term 2. Focus on turns, underwater work, and race pace sets. Bring fins and paddles.',
+    date: '2026-04-07',
+    startTime: '16:00',
+    endTime: '17:30',
+    location: 'City Dolphins Pool, Lane 3–6',
+    squadId: 'cls-2',
+    squadName: 'Junior Squad A',
+    capacity: 14,
+    registrationCutoff: '2026-04-05',
+    status: 'published',
+    coachName: 'Mike Torres',
+    createdAt: '2026-03-20T09:00:00',
+  },
+  {
+    id: 'evt-2',
+    title: 'City Dolphins Club Night — April',
+    eventType: 'meet',
+    description: 'Monthly club time trial night. Open to all squads. Events: 50m Freestyle, 100m Backstroke, 200m IM. Heats from 5:30 pm.',
+    date: '2026-04-18',
+    startTime: '17:00',
+    endTime: '20:00',
+    location: 'City Dolphins Pool',
+    squadId: null,
+    squadName: null,
+    capacity: 40,
+    registrationCutoff: '2026-04-15',
+    status: 'published',
+    coachName: 'Mike Torres',
+    createdAt: '2026-03-20T09:15:00',
+  },
+  {
+    id: 'evt-3',
+    title: 'Freestyle Technique Clinic',
+    eventType: 'clinic',
+    description: 'Two-hour intensive clinic covering freestyle entry, catch mechanics, and rotation. Led by head coach. Suitable for Junior Squad and Competitive Squad swimmers.',
+    date: '2026-04-26',
+    startTime: '09:00',
+    endTime: '11:00',
+    location: 'City Dolphins Pool, Lap Pool',
+    squadId: null,
+    squadName: null,
+    capacity: 12,
+    registrationCutoff: '2026-04-23',
+    status: 'published',
+    coachName: 'Mike Torres',
+    createdAt: '2026-03-21T10:00:00',
+  },
+  {
+    id: 'evt-4',
+    title: 'End of Term Testing Day',
+    eventType: 'testing-day',
+    description: 'Standardised time trials for Competitive Squad. 100m Freestyle, 200m Freestyle, 50m specialty stroke. Results recorded to track progression.',
+    date: '2026-05-03',
+    startTime: '08:30',
+    endTime: '11:00',
+    location: 'Metro Aquatic Centre, Sydney',
+    squadId: 'cls-3',
+    squadName: 'Competitive Squad',
+    capacity: 20,
+    registrationCutoff: '2026-04-30',
+    status: 'published',
+    coachName: 'Sarah Chen',
+    createdAt: '2026-03-22T08:00:00',
+  },
+  {
+    id: 'evt-5',
+    title: 'Easter Holiday Training Block',
+    eventType: 'training-session',
+    description: 'Four-day intensive training block over Easter school holidays. Morning sessions 7:30–9:30 am. Draft only — dates to be confirmed.',
+    date: '2026-04-14',
+    startTime: '07:30',
+    endTime: '09:30',
+    location: 'City Dolphins Pool',
+    squadId: 'cls-2',
+    squadName: 'Junior Squad A',
+    capacity: 14,
+    registrationCutoff: '2026-04-10',
+    status: 'draft',
+    coachName: 'Mike Torres',
+    createdAt: '2026-03-22T11:00:00',
+  },
+]
+
+export const DEMO_REGISTRATIONS: EventRegistration[] = [
+  // evt-1 Junior Squad Training (capacity 14) — 8 registered
+  { id: 'reg-1', eventId: 'evt-1', swimmerId: 'cs-11', swimmerName: 'Liam Brown', registeredBy: 'coach', registeredAt: '2026-03-21T10:00:00' },
+  { id: 'reg-2', eventId: 'evt-1', swimmerId: 'cs-12', swimmerName: 'Zara Lee', registeredBy: 'coach', registeredAt: '2026-03-21T10:01:00' },
+  { id: 'reg-3', eventId: 'evt-1', swimmerId: 'cs-14', swimmerName: 'Ethan Robinson', registeredBy: 'coach', registeredAt: '2026-03-21T10:02:00' },
+  { id: 'reg-4', eventId: 'evt-1', swimmerId: 'cs-15', swimmerName: 'Chloe Clark', registeredBy: 'coach', registeredAt: '2026-03-21T10:03:00' },
+  { id: 'reg-5', eventId: 'evt-1', swimmerId: 'cs-16', swimmerName: 'Lucas Lewis', registeredBy: 'coach', registeredAt: '2026-03-21T10:04:00' },
+  { id: 'reg-6', eventId: 'evt-1', swimmerId: 'cs-17', swimmerName: 'Freya Walker', registeredBy: 'coach', registeredAt: '2026-03-21T10:05:00' },
+  { id: 'reg-7', eventId: 'evt-1', swimmerId: 'cs-20', swimmerName: 'George Young', registeredBy: 'coach', registeredAt: '2026-03-21T10:06:00' },
+  // Fred Visentini registered from parent side
+  { id: 'reg-8', eventId: 'evt-1', swimmerId: 'demo-fred', swimmerName: 'Fred Visentini', registeredBy: 'parent', registeredAt: '2026-03-22T14:00:00' },
+
+  // evt-2 Club Night (capacity 40) — 12 registered
+  { id: 'reg-9',  eventId: 'evt-2', swimmerId: 'cs-11', swimmerName: 'Liam Brown', registeredBy: 'coach', registeredAt: '2026-03-21T10:10:00' },
+  { id: 'reg-10', eventId: 'evt-2', swimmerId: 'cs-12', swimmerName: 'Zara Lee', registeredBy: 'coach', registeredAt: '2026-03-21T10:11:00' },
+  { id: 'reg-11', eventId: 'evt-2', swimmerId: 'cs-14', swimmerName: 'Ethan Robinson', registeredBy: 'coach', registeredAt: '2026-03-21T10:12:00' },
+  { id: 'reg-12', eventId: 'evt-2', swimmerId: 'cs-15', swimmerName: 'Chloe Clark', registeredBy: 'coach', registeredAt: '2026-03-21T10:13:00' },
+  { id: 'reg-13', eventId: 'evt-2', swimmerId: 'cs-25', swimmerName: 'Noah Smith', registeredBy: 'coach', registeredAt: '2026-03-21T10:14:00' },
+  { id: 'reg-14', eventId: 'evt-2', swimmerId: 'cs-26', swimmerName: 'Ruby Baker', registeredBy: 'coach', registeredAt: '2026-03-21T10:15:00' },
+  { id: 'reg-15', eventId: 'evt-2', swimmerId: 'cs-27', swimmerName: 'Alfie Adams', registeredBy: 'coach', registeredAt: '2026-03-21T10:16:00' },
+  { id: 'reg-16', eventId: 'evt-2', swimmerId: 'cs-28', swimmerName: 'Daisy Nelson', registeredBy: 'coach', registeredAt: '2026-03-21T10:17:00' },
+  { id: 'reg-17', eventId: 'evt-2', swimmerId: 'cs-17', swimmerName: 'Freya Walker', registeredBy: 'coach', registeredAt: '2026-03-21T10:18:00' },
+  { id: 'reg-18', eventId: 'evt-2', swimmerId: 'cs-20', swimmerName: 'George Young', registeredBy: 'coach', registeredAt: '2026-03-21T10:19:00' },
+  { id: 'reg-19', eventId: 'evt-2', swimmerId: 'cs-23', swimmerName: 'Florence Scott', registeredBy: 'coach', registeredAt: '2026-03-21T10:20:00' },
+  { id: 'reg-20', eventId: 'evt-2', swimmerId: 'cs-29', swimmerName: 'Theo Hill', registeredBy: 'coach', registeredAt: '2026-03-21T10:21:00' },
+
+  // evt-3 Freestyle Clinic (capacity 12) — 5 registered incl. Fred
+  { id: 'reg-21', eventId: 'evt-3', swimmerId: 'demo-fred', swimmerName: 'Fred Visentini', registeredBy: 'parent', registeredAt: '2026-03-23T09:00:00' },
+  { id: 'reg-22', eventId: 'evt-3', swimmerId: 'cs-12', swimmerName: 'Zara Lee', registeredBy: 'coach', registeredAt: '2026-03-21T10:30:00' },
+  { id: 'reg-23', eventId: 'evt-3', swimmerId: 'cs-16', swimmerName: 'Lucas Lewis', registeredBy: 'coach', registeredAt: '2026-03-21T10:31:00' },
+  { id: 'reg-24', eventId: 'evt-3', swimmerId: 'cs-25', swimmerName: 'Noah Smith', registeredBy: 'coach', registeredAt: '2026-03-21T10:32:00' },
+  { id: 'reg-25', eventId: 'evt-3', swimmerId: 'cs-27', swimmerName: 'Alfie Adams', registeredBy: 'coach', registeredAt: '2026-03-21T10:33:00' },
+
+  // evt-4 Testing Day (capacity 20) — 3 registered
+  { id: 'reg-26', eventId: 'evt-4', swimmerId: 'cs-25', swimmerName: 'Noah Smith', registeredBy: 'coach', registeredAt: '2026-03-22T08:10:00' },
+  { id: 'reg-27', eventId: 'evt-4', swimmerId: 'cs-26', swimmerName: 'Ruby Baker', registeredBy: 'coach', registeredAt: '2026-03-22T08:11:00' },
+  { id: 'reg-28', eventId: 'evt-4', swimmerId: 'cs-27', swimmerName: 'Alfie Adams', registeredBy: 'coach', registeredAt: '2026-03-22T08:12:00' },
 ]
 
 export const DEMO_STAT_UPLOADS: StatUpload[] = [

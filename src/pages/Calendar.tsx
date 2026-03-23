@@ -11,7 +11,29 @@ import {
   SwimmerFilterTabs,
 } from '../components/calendar'
 import { MOCK_CALENDAR_EVENTS, getSwimmerNamesFromEvents, getClubCalendarEvents } from '../data/calendarEvents'
-import type { CalendarViewMode, CalendarActivityFilter } from '../types/calendar'
+import type { CalendarEvent, CalendarViewMode, CalendarActivityFilter } from '../types/calendar'
+import type { ClubEvent } from '../types/club'
+
+function clubEventToCalendar(e: ClubEvent): CalendarEvent {
+  const typeMap: Record<string, CalendarEvent['type']> = {
+    'training-session': 'training',
+    meet: 'competition',
+    clinic: 'camp-program',
+    'testing-day': 'assessment',
+  }
+  return {
+    id: `club-evt-${e.id}`,
+    title: e.title,
+    swimmerId: null,
+    swimmerName: null,
+    type: typeMap[e.eventType] ?? 'club-event',
+    date: e.date,
+    startTime: e.startTime,
+    endTime: e.endTime,
+    location: e.location,
+    status: 'upcoming',
+  }
+}
 
 function getWeekStart(d: Date): Date {
   const date = new Date(d)
@@ -41,7 +63,7 @@ function isInRange(dateStr: string, start: Date, end: Date): boolean {
 }
 
 export function Calendar() {
-  const { accountType, swimmers, clubClasses } = useApp()
+  const { accountType, swimmers, clubClasses, clubEvents } = useApp()
   const isParent = accountType === 'parent'
   const isClub = accountType === 'club'
 
@@ -60,6 +82,12 @@ export function Calendar() {
     [isParent, familyNames]
   )
   const familyNameSet = useMemo(() => new Set(familyNames), [familyNames])
+
+  // Real club events converted to CalendarEvent format
+  const realClubCalEvents = useMemo(
+    () => clubEvents.filter((e) => e.status === 'published').map(clubEventToCalendar),
+    [clubEvents]
+  )
 
   const { rangeStart, rangeEnd, headerLabel } = useMemo(() => {
     if (viewMode === 'month') {
@@ -94,45 +122,42 @@ export function Calendar() {
     const monthStart = getMonthStart(focusDate)
     const monthEnd = addDays(new Date(focusDate.getFullYear(), focusDate.getMonth() + 1, 0), 0)
     let list: typeof MOCK_CALENDAR_EVENTS
-    if (isClub && clubClasses.length > 0) {
-      list = getClubCalendarEvents(clubClasses, monthStart, monthEnd, { maxDays: 14 })
+    if (isClub) {
+      list = [
+        ...getClubCalendarEvents(clubClasses, monthStart, monthEnd, { maxDays: 14 }),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, monthStart, monthEnd)),
+      ]
       if (selectedSquadId) list = list.filter((e) => e.id.startsWith(`club-${selectedSquadId}-`))
     } else {
-      list = MOCK_CALENDAR_EVENTS.filter((e) =>
-        isInRange(e.date, monthStart, monthEnd)
-      )
-      if (isParent && familyNameSet.size > 0) list = list.filter((e) => familyNameSet.has(e.swimmerName ?? ''))
-      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === selectedSwimmer)
+      list = [
+        ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, monthStart, monthEnd)),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, monthStart, monthEnd)),
+      ]
+      if (isParent && familyNameSet.size > 0) list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
+      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
     }
     if (activityFilter !== 'all') list = list.filter((e) => e.type === activityFilter)
-    // Parent/generic: limit mini calendar when too many
-    if (!isClub && !isParent && list.length > 8) {
-      const byType = (type: string) => list.filter((e) => e.type === type)
-      const training = byType('training').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 2)
-      const competition = byType('competition').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 1)
-      const clubEvent = byType('club-event').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 1)
-      const assessment = byType('assessment').slice(0, 1)
-      list = [...training, ...competition, ...clubEvent, ...assessment].sort(
-        (a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
-      )
-    }
     return list.sort(
       (a, b) =>
         a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
     )
-  }, [focusDate, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet])
+  }, [focusDate, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet, realClubCalEvents])
 
   const filteredEvents = useMemo(() => {
     let list: typeof MOCK_CALENDAR_EVENTS
-    if (isClub && clubClasses.length > 0) {
-      list = getClubCalendarEvents(clubClasses, rangeStart, rangeEnd, { maxDays: 14 })
+    if (isClub) {
+      list = [
+        ...getClubCalendarEvents(clubClasses, rangeStart, rangeEnd, { maxDays: 14 }),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+      ]
       if (selectedSquadId) list = list.filter((e) => e.id.startsWith(`club-${selectedSquadId}-`))
     } else {
-      list = MOCK_CALENDAR_EVENTS.filter((e) =>
-        isInRange(e.date, rangeStart, rangeEnd)
-      )
-      if (isParent && familyNameSet.size > 0) list = list.filter((e) => familyNameSet.has(e.swimmerName ?? ''))
-      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === selectedSwimmer)
+      list = [
+        ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+      ]
+      if (isParent && familyNameSet.size > 0) list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
+      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
     }
     if (activityFilter !== 'all') list = list.filter((e) => e.type === activityFilter)
     return list.sort(
@@ -140,7 +165,7 @@ export function Calendar() {
         a.date.localeCompare(b.date) ||
         a.startTime.localeCompare(b.startTime)
     )
-  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet])
+  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet, realClubCalEvents])
 
   const summaryStats = useMemo(() => {
     const now = new Date()
@@ -149,14 +174,18 @@ export function Calendar() {
     const weekendStart = addDays(weekStart, 5)
     const weekendEnd = addDays(weekStart, 6)
     let allInRange: typeof MOCK_CALENDAR_EVENTS
-    if (isClub && clubClasses.length > 0) {
-      allInRange = getClubCalendarEvents(clubClasses, rangeStart, rangeEnd, { maxDays: 14 })
+    if (isClub) {
+      allInRange = [
+        ...getClubCalendarEvents(clubClasses, rangeStart, rangeEnd, { maxDays: 14 }),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+      ]
       if (selectedSquadId) allInRange = allInRange.filter((e) => e.id.startsWith(`club-${selectedSquadId}-`))
     } else {
-      allInRange = MOCK_CALENDAR_EVENTS.filter((e) =>
-        isInRange(e.date, rangeStart, rangeEnd)
-      )
-      if (isParent && familyNameSet.size > 0) allInRange = allInRange.filter((e) => familyNameSet.has(e.swimmerName ?? ''))
+      allInRange = [
+        ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
+      ]
+      if (isParent && familyNameSet.size > 0) allInRange = allInRange.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
     }
     let forSummary = allInRange
     if (activityFilter !== 'all') forSummary = forSummary.filter((e) => e.type === activityFilter)
@@ -185,7 +214,7 @@ export function Calendar() {
         : undefined,
       linkedSwimmers: linkedCount,
     }
-  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNames.length, familyNameSet, swimmerNames.length])
+  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNames.length, familyNameSet, swimmerNames.length, realClubCalEvents])
 
   const handlePrev = () => {
     if (viewMode === 'month') {

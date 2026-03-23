@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import type { TeamProfile } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import { ClubMetricCard, QuickActionPanel } from '../components/club'
+import { EventCard } from '../components/events/EventCard'
 import { PATHWAY_STAGES } from '../theme/tokens'
 import { ROUTES } from '../routes'
 import { AlertTriangle } from 'lucide-react'
@@ -16,7 +17,7 @@ const ORG_TYPE_LABELS: Record<TeamProfile['organisationType'], string> = {
 }
 
 export function ClubDashboard() {
-  const { teamProfile, clubClasses, clubSwimmers, clubPayments, clubStatUploads, isPremiumTier } = useApp()
+  const { teamProfile, clubClasses, clubSwimmers, clubPayments, clubStatUploads, isPremiumTier, clubEvents, eventRegistrations } = useApp()
   const navigate = useNavigate()
 
   if (!teamProfile) {
@@ -42,6 +43,15 @@ export function ClubDashboard() {
   const totalCollected = clubPayments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0)
   const outstanding = clubPayments.filter((p) => p.status === 'due' || p.status === 'overdue').reduce((s, p) => s + p.amount, 0)
   const recentUploads = clubStatUploads.slice(0, 5)
+
+  const upcomingEvents = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    return clubEvents
+      .filter((e) => e.status === 'published' && e.date >= today)
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 3)
+  }, [clubEvents])
 
   // At-risk detection (club only): no stats in 30+ days OR overdue payment
   const atRiskSwimmers = useMemo(() => {
@@ -96,7 +106,7 @@ export function ClubDashboard() {
 
       <QuickActionPanel
         actions={[
-          { label: 'Create class', onClick: () => navigate(ROUTES.app.classes) },
+          { label: 'Create event', onClick: () => navigate(ROUTES.app.eventCreate) },
           { label: 'Add swimmer', onClick: () => navigate(ROUTES.app.swimmers) },
           { label: 'Upload stats', onClick: () => navigate(ROUTES.app.stats) },
           { label: 'Record payment', onClick: () => navigate(ROUTES.app.payments) },
@@ -135,34 +145,54 @@ export function ClubDashboard() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Upcoming events */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-text-primary">Upcoming events</h2>
+          <Link to={ROUTES.app.events} className="text-sm font-medium text-accent hover:underline">
+            Manage all →
+          </Link>
+        </div>
+        {upcomingEvents.length === 0 ? (
+          <div className="rounded-[var(--radius-card)] border border-border/60 bg-card px-5 py-8 text-center">
+            <p className="text-sm text-text-muted">No upcoming published events.</p>
+            <Link
+              to={ROUTES.app.eventCreate}
+              className="mt-3 inline-block text-sm font-medium text-accent hover:underline"
+            >
+              Create an event →
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingEvents.map((evt) => (
+              <EventCard
+                key={evt.id}
+                event={evt}
+                registrations={eventRegistrations}
+                showStatus
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Recent uploads */}
+      {recentUploads.length > 0 && (
         <div className="rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Upcoming activity
+            Recent stat uploads
           </h3>
-          <p className="mt-3 text-sm text-text-secondary">
-            Sessions and events from your classes appear here. Link your calendar for full view.
-          </p>
-          <p className="mt-2 text-xs text-text-muted">Next: Junior Squad A · Tue 5:00 pm</p>
+          <ul className="mt-3 space-y-2">
+            {recentUploads.map((u) => (
+              <li key={u.id} className="flex justify-between text-sm">
+                <span className="text-text-primary">{u.swimmerName}</span>
+                <span className="text-text-secondary">{u.eventMetric} {u.value}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Recent uploads
-          </h3>
-          {recentUploads.length === 0 ? (
-            <p className="mt-3 text-sm text-text-muted">No stats uploaded yet.</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {recentUploads.map((u) => (
-                <li key={u.id} className="flex justify-between text-sm">
-                  <span className="text-text-primary">{u.swimmerName}</span>
-                  <span className="text-text-secondary">{u.eventMetric} {u.value}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+      )}
 
       <div className="rounded-[var(--radius-card)] border border-success/30 bg-card p-5 shadow-[var(--shadow-card)]">
         <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">

@@ -119,3 +119,36 @@ export type AttendanceSummary = {
   present: number
   total: number
 }
+
+// ─── Event management ────────────────────────────────────────────────────────
+
+export type EventType = 'training-session' | 'meet' | 'clinic' | 'testing-day'
+export type EventStatus = 'draft' | 'published' | 'cancelled'
+
+export type ClubEvent = {
+  id: string
+  title: string
+  eventType: EventType
+  description: string
+  date: string              // YYYY-MM-DD
+  startTime: string         // HH:MM
+  endTime: string           // HH:MM
+  location: string
+  squadId: string | null    // SwimClass.id — null = open to all
+  squadName: string | null
+  capacity: number
+  registrationCutoff: string // YYYY-MM-DD
+  status: EventStatus
+  coachName: string
+  createdAt: string
+}
+
+export type EventRegistration = {
+  id: string
+  eventId: string
+  swimmerId: string         // SwimmerProfile.id (parent side) or ClubSwimmer.id (club side)
+  swimmerName: string
+  registeredBy: 'parent' | 'self' | 'coach'
+  registeredAt: string
+  notes?: string
+}

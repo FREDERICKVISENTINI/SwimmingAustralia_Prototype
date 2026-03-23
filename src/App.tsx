@@ -28,6 +28,11 @@ import { PaymentsPage } from './pages/PaymentsPage'
 import { ClubStats } from './pages/ClubStats'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { ProfileSettings } from './pages/ProfileSettings'
+import { EventsPage } from './pages/EventsPage'
+import { CreateEventPage } from './pages/CreateEventPage'
+import { EditEventPage } from './pages/EditEventPage'
+import { EventDetailPage } from './pages/EventDetailPage'
+import { MyEventsPage } from './pages/MyEventsPage'
 
 function App() {
   return (
@@ -64,6 +69,11 @@ function App() {
             <Route path="instructors/:id" element={<InstructorDetail />} />
             <Route path={ROUTES.app.payments.slice(1)} element={<PaymentsPage />} />
             <Route path={ROUTES.app.stats.slice(1)} element={<ClubStats />} />
+            <Route path={ROUTES.app.events.slice(1)} element={<EventsPage />} />
+            <Route path={ROUTES.app.eventCreate.slice(1)} element={<CreateEventPage />} />
+            <Route path="events/:id" element={<EventDetailPage />} />
+            <Route path="events/:id/edit" element={<EditEventPage />} />
+            <Route path={ROUTES.app.myEvents.slice(1)} element={<MyEventsPage />} />
           </Route>
           <Route path="*" element={<Navigate to={ROUTES.signIn} replace />} />
         </Routes>

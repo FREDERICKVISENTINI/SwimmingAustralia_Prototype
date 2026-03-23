@@ -8,6 +8,8 @@ import {
   GraduationCap,
   Settings,
   Map,
+  CalendarDays,
+  BookOpen,
 } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
@@ -17,6 +19,8 @@ import { FEDERATION_SECTIONS } from '../../data/federationSections'
 
 const parentNavItems = [
   { to: ROUTES.app.dashboard, label: 'Dashboard', icon: LayoutDashboard },
+  { to: ROUTES.app.events, label: 'Events', icon: CalendarDays },
+  { to: ROUTES.app.myEvents, label: 'My events', icon: BookOpen },
   { to: ROUTES.app.calendar, label: 'Calendar', icon: Calendar },
   { to: ROUTES.app.pathway, label: 'Pathway', icon: Map },
   { to: ROUTES.app.profile, label: 'Profile', icon: Users },
@@ -27,12 +31,12 @@ const parentNavItems = [
 
 const clubNavItems = [
   { to: ROUTES.app.teamDashboard, label: 'Dashboard', icon: LayoutDashboard },
-  { to: ROUTES.app.classes, label: 'Class management', icon: GraduationCap },
+  { to: ROUTES.app.events, label: 'Events', icon: CalendarDays },
+  { to: ROUTES.app.classes, label: 'Squads', icon: GraduationCap },
   { to: ROUTES.app.swimmers, label: 'Swimmers', icon: Users },
   { to: ROUTES.app.calendar, label: 'Calendar', icon: Calendar },
   { to: ROUTES.app.payments, label: 'Payments', icon: CreditCard },
   { to: ROUTES.app.stats, label: 'Meets & Uploads', icon: BarChart3 },
-  { to: ROUTES.app.insights, label: 'Premium data', icon: Lightbulb },
   { to: ROUTES.app.profile, label: 'Profile', icon: Users },
   { to: ROUTES.app.profileSettings, label: 'Settings', icon: Settings },
 ] as const

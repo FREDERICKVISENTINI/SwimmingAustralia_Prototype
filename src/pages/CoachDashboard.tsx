@@ -29,12 +29,11 @@ function TalentFlagBadges({ flags }: { flags: TalentFlagType[] }) {
 }
 
 export function CoachDashboard() {
-  const { accountType, coachProfile, clubSwimmers, clubClasses } = useApp()
+  const { accountType, clubSwimmers, clubClasses } = useApp()
   const [classFilter, setClassFilter] = useState<string>('')
   const [flaggedOnly, setFlaggedOnly] = useState(false)
 
   const isClub = accountType === 'club'
-  const isFederation = accountType === 'federation'
 
   const filteredSwimmers = useMemo(() => {
     let list = clubSwimmers
@@ -54,40 +53,6 @@ export function CoachDashboard() {
 
   const pathwayLabel = (stageId: string) =>
     PATHWAY_STAGES.find((s) => s.id === stageId)?.label ?? stageId
-
-  if (isFederation) {
-    const pathwayLabels =
-      coachProfile?.pathwayFocus?.length
-        ? coachProfile.pathwayFocus
-            .map((id) => PATHWAY_STAGES.find((s) => s.id === id)?.label ?? id)
-            .join(', ')
-        : '—'
-    return (
-      <PageSection
-        title="Federation dashboard"
-        subtitle="Govern and support the pathway at state and national level."
-      >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <p className="text-xs font-medium uppercase tracking-wider text-text-muted">Organisation</p>
-            <p className="mt-1 font-medium text-text-primary">{coachProfile?.organisation ?? '—'}</p>
-          </Card>
-          <Card>
-            <p className="text-xs font-medium uppercase tracking-wider text-text-muted">Role</p>
-            <p className="mt-1 font-medium text-text-primary">{coachProfile?.roleTitle ?? '—'}</p>
-          </Card>
-          <Card>
-            <p className="text-xs font-medium uppercase tracking-wider text-text-muted">Accreditation</p>
-            <p className="mt-1 font-medium text-success">{coachProfile?.accreditationLevel ?? '—'}</p>
-          </Card>
-        </div>
-        <Card className="mt-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-text-muted">Pathway focus</p>
-          <p className="mt-1 font-medium text-text-primary">{pathwayLabels}</p>
-        </Card>
-      </PageSection>
-    )
-  }
 
   if (!isClub) {
     return (

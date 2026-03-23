@@ -9,8 +9,8 @@ import {
 } from 'react'
 import type { AccountType } from '../theme/tokens'
 import type { User, SwimmerProfile, TeamProfile, CoachProfile } from '../types'
-import type { SwimClass, ClubSwimmer, PaymentRecord, StatUpload, ClubInstructor } from '../types/club'
-import { DEMO_CLASSES, DEMO_CLUB_SWIMMERS, DEMO_PAYMENTS, DEMO_STAT_UPLOADS, DEMO_INSTRUCTORS } from '../data/clubSeedData'
+import type { SwimClass, ClubSwimmer, PaymentRecord, StatUpload, ClubInstructor, ClubEvent, EventRegistration } from '../types/club'
+import { DEMO_CLASSES, DEMO_CLUB_SWIMMERS, DEMO_PAYMENTS, DEMO_STAT_UPLOADS, DEMO_INSTRUCTORS, DEMO_EVENTS, DEMO_REGISTRATIONS } from '../data/clubSeedData'
 
 export type { SwimmerProfile, TeamProfile, CoachProfile }
 
@@ -28,6 +28,8 @@ type AppState = {
   clubPayments: PaymentRecord[]
   clubStatUploads: StatUpload[]
   clubInstructors: ClubInstructor[]
+  clubEvents: ClubEvent[]
+  eventRegistrations: EventRegistration[]
 }
 
 type AppContextValue = AppState & {
@@ -61,6 +63,13 @@ type AppContextValue = AppState & {
   addClubPayment: (p: Omit<PaymentRecord, 'id'>) => void
   setClubStatUploads: (uploads: StatUpload[]) => void
   addClubStatUpload: (u: Omit<StatUpload, 'id'>) => void
+  // Events
+  addClubEvent: (e: Omit<ClubEvent, 'id' | 'createdAt'>) => void
+  updateClubEvent: (id: string, e: Partial<ClubEvent>) => void
+  deleteClubEvent: (id: string) => void
+  // Registrations
+  addEventRegistration: (r: Omit<EventRegistration, 'id' | 'registeredAt'>) => void
+  removeEventRegistration: (id: string) => void
   /** Prototype only: club Premium tier toggle (no backend). */
   isPremiumTier: boolean
   setIsPremiumTier: (value: boolean) => void
@@ -199,6 +208,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (clubDemoSeed) return DEMO_INSTRUCTORS
     return fromSaved ?? []
   })
+  const [clubEvents, setClubEventsState] = useState<ClubEvent[]>(() => {
+    const fromSaved = saved?.clubEvents
+    if (clubDemoSeed) return DEMO_EVENTS
+    return fromSaved ?? DEMO_EVENTS
+  })
+  const [eventRegistrations, setEventRegistrationsState] = useState<EventRegistration[]>(() => {
+    const fromSaved = saved?.eventRegistrations
+    if (clubDemoSeed) return DEMO_REGISTRATIONS
+    return fromSaved ?? DEMO_REGISTRATIONS
+  })
   const [isPremiumTier, setIsPremiumTier] = useState(false)
 
   const swimmerProfile = useMemo(
@@ -222,9 +241,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clubPayments,
         clubStatUploads,
         clubInstructors,
+        clubEvents,
+        eventRegistrations,
       })
     }
-  }, [user, accountType, swimmers, activeSwimmerId, teamProfile, coachProfile, parentOnboardingComplete, clubCoachOnboardingComplete, clubClasses, clubSwimmers, clubPayments, clubStatUploads, clubInstructors])
+  }, [user, accountType, swimmers, activeSwimmerId, teamProfile, coachProfile, parentOnboardingComplete, clubCoachOnboardingComplete, clubClasses, clubSwimmers, clubPayments, clubStatUploads, clubInstructors, clubEvents, eventRegistrations])
 
   const signIn = useCallback((email: string, _password: string) => {
     const emailToUse = email || 'demo@ausswim.com'
@@ -234,10 +255,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveSwimmerIdState(DEMO_SWIMMERS[0].id)
     setTeamProfileState(null)
     setParentOnboardingComplete(true)
+    setClubEventsState(DEMO_EVENTS)
+    setEventRegistrationsState(DEMO_REGISTRATIONS)
   }, [])
 
   const signInAsClubDemo = useCallback(() => {
-    setUser({ name: 'Sarah Chen', email: 'clubdemo@ausswim.com' })
+    setUser({ name: 'Mike Torres', email: 'clubdemo@ausswim.com' })
     setAccountTypeState('club')
     setSwimmers([])
     setActiveSwimmerIdState(null)
@@ -249,6 +272,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClubPaymentsState(DEMO_PAYMENTS)
     setClubStatUploadsState(DEMO_STAT_UPLOADS)
     setClubInstructorsState(DEMO_INSTRUCTORS)
+    setClubEventsState(DEMO_EVENTS)
+    setEventRegistrationsState(DEMO_REGISTRATIONS)
   }, [])
 
   const signInAsFederationDemo = useCallback(() => {
@@ -265,6 +290,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClubPaymentsState([])
     setClubStatUploadsState([])
     setClubInstructorsState([])
+    setClubEventsState([])
+    setEventRegistrationsState([])
   }, [])
 
   const signUp = useCallback((name: string, email: string, _password: string) => {
@@ -285,6 +312,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClubPaymentsState([])
     setClubStatUploadsState([])
     setClubInstructorsState([])
+    setClubEventsState([])
+    setEventRegistrationsState([])
     try {
       if (typeof window !== 'undefined') localStorage.removeItem(SESSION_KEY)
     } catch {
@@ -377,6 +406,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClubStatUploadsState((prev) => [...prev, { ...u, id: `st-${Date.now()}`, uploadedAt: new Date().toISOString() }])
   }, [])
 
+  const addClubEvent = useCallback((e: Omit<ClubEvent, 'id' | 'createdAt'>) => {
+    setClubEventsState((prev) => [...prev, { ...e, id: `evt-${Date.now()}`, createdAt: new Date().toISOString() }])
+  }, [])
+  const updateClubEvent = useCallback((id: string, e: Partial<ClubEvent>) => {
+    setClubEventsState((prev) => prev.map((x) => (x.id === id ? { ...x, ...e } : x)))
+  }, [])
+  const deleteClubEvent = useCallback((id: string) => {
+    setClubEventsState((prev) => prev.filter((x) => x.id !== id))
+    setEventRegistrationsState((prev) => prev.filter((r) => r.eventId !== id))
+  }, [])
+
+  const addEventRegistration = useCallback((r: Omit<EventRegistration, 'id' | 'registeredAt'>) => {
+    setEventRegistrationsState((prev) => [...prev, { ...r, id: `reg-${Date.now()}`, registeredAt: new Date().toISOString() }])
+  }, [])
+  const removeEventRegistration = useCallback((id: string) => {
+    setEventRegistrationsState((prev) => prev.filter((r) => r.id !== id))
+  }, [])
+
   const value = useMemo<AppContextValue>(
     () => ({
       user,
@@ -393,6 +440,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clubPayments,
       clubStatUploads,
       clubInstructors,
+      clubEvents,
+      eventRegistrations,
       signIn,
       signInAsClubDemo,
       signInAsFederationDemo,
@@ -418,6 +467,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addClubPayment,
       setClubStatUploads,
       addClubStatUpload,
+      addClubEvent,
+      updateClubEvent,
+      deleteClubEvent,
+      addEventRegistration,
+      removeEventRegistration,
       isPremiumTier,
       setIsPremiumTier,
     }),
@@ -436,6 +490,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clubPayments,
       clubStatUploads,
       clubInstructors,
+      clubEvents,
+      eventRegistrations,
       signIn,
       signInAsClubDemo,
       signInAsFederationDemo,
@@ -461,6 +517,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addClubPayment,
       setClubStatUploads,
       addClubStatUpload,
+      addClubEvent,
+      updateClubEvent,
+      deleteClubEvent,
+      addEventRegistration,
+      removeEventRegistration,
       isPremiumTier,
     ]
   )

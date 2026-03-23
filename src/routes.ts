@@ -39,6 +39,11 @@ export const ROUTES = {
     instructorDetail: (id: string) => `/instructors/${id}`,
     payments: '/payments',
     stats: '/stats',
+    events: '/events',
+    eventCreate: '/events/new',
+    eventDetail: (id: string) => `/events/${id}`,
+    eventEdit: (id: string) => `/events/${id}/edit`,
+    myEvents: '/my-events',
   },
 } as const
 
