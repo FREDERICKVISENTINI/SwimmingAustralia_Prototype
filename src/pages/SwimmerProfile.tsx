@@ -35,6 +35,7 @@ const emptyNewSwimmer: Omit<SwimmerProfile, 'id'> = {
   gender: '',
   state: '',
   notes: '',
+  program: '',
   pathwayStageId: 'learn-to-swim',
   classId: null,
   className: null,
@@ -207,7 +208,7 @@ function ClubProfileView() {
   const { teamProfile, user, clubClasses, clubSwimmers, clubPayments } = useApp()
   if (!teamProfile) return null
   const orgTypeLabel = ORG_TYPE_LABELS[teamProfile.organisationType] ?? teamProfile.organisationType
-  const pathwayLabelsFromClasses = [...new Set(clubClasses.map((c) => c.pathwayStageIdId))]
+  const pathwayLabelsFromClasses = [...new Set(clubClasses.map((c) => c.pathwayStageId))]
     .map((id) => PATHWAY_STAGES.find((s) => s.id === id)?.label ?? id.replace(/-/g, ' '))
     .filter(Boolean)
   const pathwaySummary = pathwayLabelsFromClasses.length > 1
@@ -540,7 +541,7 @@ export function SwimmerProfile() {
               />
               <ProfileRow
                 label="Gender"
-                value={swimmerProfile.gender}
+                value={swimmerProfile.gender ?? ''}
                 onEdit={() => startEdit('personal')}
               />
               <ProfileRow
@@ -550,7 +551,7 @@ export function SwimmerProfile() {
               />
               <ProfileRow
                 label="Notes"
-                value={swimmerProfile.notes}
+                value={swimmerProfile.notes ?? ''}
                 onEdit={() => startEdit('personal')}
               />
             </div>
@@ -689,12 +690,12 @@ export function SwimmerProfile() {
             <div className="mt-2 space-y-0">
               <ProfileRow
                 label="Club or program"
-                value={swimmerProfile.program}
+                value={swimmerProfile.program ?? ''}
                 onEdit={() => startEdit('club')}
               />
               <ProfileRow
                 label="State"
-                value={swimmerProfile.state}
+                value={swimmerProfile.state ?? ''}
                 onEdit={() => startEdit('club')}
               />
             </div>

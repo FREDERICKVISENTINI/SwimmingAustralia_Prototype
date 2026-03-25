@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom'
-import { MapPin, FileText, ShoppingBag, FlaskConical, ExternalLink } from 'lucide-react'
+import { MapPin, FileText, ShoppingBag, FlaskConical } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
-import { ROUTES } from '../../routes'
 import { PATHWAY_STAGES } from '../../theme/tokens'
 import type { ClubSwimmer } from '../../types/club'
 import { isSpartaEligible, spartaPrimaryLabel } from '../../utils/spartaPathway'

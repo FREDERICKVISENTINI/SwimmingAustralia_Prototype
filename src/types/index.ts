@@ -29,6 +29,8 @@ export type UnifiedSwimmer = {
   // Club / squad
   classId: string | null
   className: string | null
+  /** Parent-facing label for club or program (e.g. City Dolphins). */
+  program?: string
   coachId?: string
   coachName?: string
 
