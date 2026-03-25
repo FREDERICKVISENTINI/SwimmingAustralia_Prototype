@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { PageSection } from '../components/layout/PageSection'
 import { FederationMetricCard } from '../components/federation'
 import { NationalReachCard } from '../components/federation/commercial'
-import { AustraliaSwimmerDensityMap } from '../components/federation/AustraliaSwimmerDensityMap'
 import {
   FEDERATION_SUMMARY_METRICS,
   DEFAULT_FEDERATION_FILTERS,
@@ -108,44 +107,36 @@ export function FederationDashboard() {
         <NationalReachCard />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Participation by state */}
-        <div className={cardClass}>
-          <div className="mb-4 flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-accent" />
-            <h2 className="font-display text-base font-semibold text-text-primary">
-              Participation by state
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  <th className="pb-2 pr-4">State</th>
-                  <th className="pb-2 pr-4 text-right">Swimmers</th>
-                  <th className="pb-2 text-right">Share</th>
-                </tr>
-              </thead>
-              <tbody>
-                {NATIONAL_PARTICIPATION_BY_STATE.map((row) => (
-                  <tr key={row.state} className="border-b border-border/60 last:border-0">
-                    <td className="py-2.5 font-medium text-text-primary">{row.state}</td>
-                    <td className="py-2.5 text-right tabular-nums text-text-secondary">
-                      {row.swimmers.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums text-text-muted">
-                      {row.sharePct.toFixed(1)}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div className={cardClass}>
+        <div className="mb-4 flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-accent" />
+          <h2 className="font-display text-base font-semibold text-text-primary">
+            Participation by state
+          </h2>
         </div>
-
-        {/* Map */}
-        <div className={cardClass}>
-          <AustraliaSwimmerDensityMap />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
+                <th className="pb-2 pr-4">State</th>
+                <th className="pb-2 pr-4 text-right">Swimmers</th>
+                <th className="pb-2 text-right">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {NATIONAL_PARTICIPATION_BY_STATE.map((row) => (
+                <tr key={row.state} className="border-b border-border/60 last:border-0">
+                  <td className="py-2.5 font-medium text-text-primary">{row.state}</td>
+                  <td className="py-2.5 text-right tabular-nums text-text-secondary">
+                    {row.swimmers.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 text-right tabular-nums text-text-muted">
+                    {row.sharePct.toFixed(1)}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
