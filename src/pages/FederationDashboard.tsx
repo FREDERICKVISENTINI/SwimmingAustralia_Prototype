@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PageSection } from '../components/layout/PageSection'
 import { FederationMetricCard } from '../components/federation'
-import { NationalReachCard, ParticipationBreakdownCard } from '../components/federation/commercial'
+import { NationalReachCard } from '../components/federation/commercial'
 import { AustraliaSwimmerDensityMap } from '../components/federation/AustraliaSwimmerDensityMap'
 import {
   FEDERATION_SUMMARY_METRICS,
@@ -11,7 +11,6 @@ import {
 import type { FederationFilters } from '../data/federationDashboardData'
 import {
   NATIONAL_PARTICIPATION_BY_STATE,
-  NATIONAL_SWIMMER_TOTAL,
   HP_TALENT_SIGNALS_NATIONAL,
   DROPOUT_RISK_AGGREGATE,
   CLUB_COMPLIANCE_NATIONAL,
@@ -36,9 +35,15 @@ function formatAud(n: number): string {
 const cardClass =
   'rounded-[var(--radius-card)] border border-border/80 bg-card p-5 shadow-[var(--shadow-card)]'
 
+/** Demo: stable random total ~4M on mount (illustrative national registration headline). */
+function useNationalRegisteredSwimmersHeadline(): number {
+  return useMemo(() => 3_600_000 + Math.floor(Math.random() * 800_000), [])
+}
+
 export function FederationDashboard() {
   const [filters] = useState<FederationFilters>(DEFAULT_FEDERATION_FILTERS)
   const derived = useMemo(() => deriveFilteredMetrics(filters), [filters])
+  const nationalRegisteredSwimmers = useNationalRegisteredSwimmersHeadline()
 
   const fundingPct = Math.min(
     100,
@@ -69,7 +74,7 @@ export function FederationDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <FederationMetricCard
           label="Registered swimmers (national)"
-          value={NATIONAL_SWIMMER_TOTAL.toLocaleString()}
+          value={nationalRegisteredSwimmers.toLocaleString()}
           subtext="By state affiliation"
           icon={<Users className="h-5 w-5" />}
         />
@@ -95,15 +100,12 @@ export function FederationDashboard() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">Participation funnel &amp; national reach</h2>
+          <h2 className="text-lg font-semibold text-text-primary">National reach</h2>
           <p className="mt-1 max-w-3xl text-sm text-text-muted">
-            Pathway width and state-level distribution — illustrative view for national oversight (demo figures).
+            Country-wide swimmer distribution — illustrative view for national oversight (demo figures).
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <ParticipationBreakdownCard />
-          <NationalReachCard />
-        </div>
+        <NationalReachCard />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
