@@ -53,7 +53,7 @@ export const INSIGHT_CATEGORIES = [
     id: 'commercial-sponsorship',
     title: 'Commercial Sponsorship Intelligence',
     description:
-      'Audience demographics, athlete engagement levels, participation reach, and measurable sponsor exposure within the sport.',
+      'Addressable audience inventory, sponsor-ready cohorts, and revenue packaging derived from unified registrations, clubs, events, and pathway data.',
   },
   {
     id: 'high-performance',
@@ -63,14 +63,18 @@ export const INSIGHT_CATEGORIES = [
   },
 ] as const
 
-/** Federation section id -> insight category ids. Groups Premium data categories under Participation & Growth, etc. */
+/** Federation section id -> insight category ids. Groups Premium data categories under each section. */
 export const INSIGHT_CATEGORIES_BY_FEDERATION_SECTION: Record<string, string[]> = {
-  'participation-growth': ['participation', 'geographic'],
-  'talent-identification': ['talent-signals', 'high-performance'],
-  'performance-pipeline': ['athlete-development'],
-  'club-performance': [],
-  'national-event-analytics': ['competition-event'],
-  'commercial-sponsorship': ['commercial-sponsorship', 'consumer-behaviour'],
+  'system-health': [],
+  'player-database': ['participation', 'geographic'],
+  'club-database': ['geographic', 'consumer-behaviour'],
+  'performance': [
+    'competition-event',
+    'talent-signals',
+    'high-performance',
+    'athlete-development',
+  ],
+  'commercial': ['commercial-sponsorship', 'consumer-behaviour'],
 }
 
 export function getInsightCategoriesForFederationSection(sectionId: string): (typeof INSIGHT_CATEGORIES)[number][] {
@@ -85,38 +89,47 @@ export const FEDERATION_DATA_INTELLIGENCE_RECOMMENDATIONS: Record<
   FederationSectionId,
   readonly { title: string; description: string }[]
 > = {
-  'participation-growth': [
+  'system-health': [],
+  'player-database': [
     {
-      title: 'Participation Analytics',
+      title: 'National swimmer lookup',
       description:
-        'National swimmer numbers, demographic breakdowns, regional participation trends, and growth rates across the sport.',
+        'Search by name, member ID, or club — unified profile with pathway stage, meet history, and HP signals for federation staff.',
     },
     {
-      title: 'Geographic Sports Intelligence',
+      title: 'Retention & progression context',
       description:
-        'Participation density by region or postcode, talent concentration, facility demand, and regional club development strength.',
+        'Attendance, competition frequency, cohort percentiles, and club-level retention markers to prioritise outreach.',
     },
   ],
-  'talent-identification': [
+  'club-database': [
+    {
+      title: 'National club registry',
+      description:
+        'Affiliation, governance, programs, venue, compliance, and hosting status — one record per affiliated club for federation and state staff.',
+    },
+    {
+      title: 'Operational & commercial signals',
+      description:
+        'Aggregated membership, platform spend, meet hosting, and cohort benchmarks without exposing individual families.',
+    },
+  ],
+  'performance': [
+    {
+      title: 'Competition & Event Data',
+      description:
+        'Meet participation trends, event popularity, qualification rates, rankings distribution, and performance progression across competitions.',
+    },
     {
       title: 'Talent Identification Signals',
       description:
         'Emerging athlete rankings, improvement velocity, technique efficiency indicators, and early high-performance potential flags.',
     },
     {
-      title: 'High-Performance Benchmark Data',
-      description:
-        'Stroke efficiency benchmarks, performance standards, development indicators, and comparisons with national and international elite metrics.',
-    },
-  ],
-  'performance-pipeline': [
-    {
       title: 'Athlete Development Metrics',
       description:
         'Progression rates, improvement curves, training participation patterns, and development benchmarks across age groups.',
     },
-  ],
-  'club-performance': [
     {
       title: 'Club benchmarking & squad analytics',
       description:
@@ -128,23 +141,16 @@ export const FEDERATION_DATA_INTELLIGENCE_RECOMMENDATIONS: Record<
         'How clubs compare within states and nationally for participation, talent pipeline, and program health.',
     },
   ],
-  'national-event-analytics': [
+  'commercial': [
     {
-      title: 'Competition & Event Data',
+      title: 'Audience & cohort intelligence',
       description:
-        'Meet participation trends, event popularity, qualification rates, rankings distribution, and performance progression across competitions.',
-    },
-  ],
-  'commercial-sponsorship': [
-    {
-      title: 'Commercial Sponsorship Intelligence',
-      description:
-        'Audience demographics, athlete engagement levels, participation reach, and measurable sponsor exposure within the sport.',
+        'Segmented reach, sponsorable athlete pools, parent-linked households, and event-linked audiences — packaged for partnership conversations.',
     },
     {
-      title: 'Consumer Behaviour Insights',
+      title: 'Revenue & partner packaging',
       description:
-        'Equipment usage trends, training habits, program participation patterns, and spending behaviour of swimmers and families.',
+        'Sponsorship tiers, subscriptions, HP services, and event inventory tied to real federation data — not vanity engagement scores.',
     },
   ],
 }
@@ -298,6 +304,39 @@ export const expertOutputsByStage: Record<PathwayStageId, ExpertOutputItem[]> = 
       source: 'High-performance biomechanics',
     },
   ],
+}
+
+/** Demo SPARTA II screening windows — production would pull from state HP calendars. */
+export type SpartaTestingSlot = {
+  id: string
+  window: string
+  location: string
+  placesRemaining: number
+}
+
+export const SPARTA_TESTING_SLOTS_DEMO: SpartaTestingSlot[] = [
+  { id: 'sp-1', window: '18–20 Apr 2025', location: 'National training centre (demo venue)', placesRemaining: 14 },
+  { id: 'sp-2', window: '2–4 May 2025', location: 'Sydney Olympic Park — regional hub', placesRemaining: 22 },
+  { id: 'sp-3', window: '16–18 May 2025', location: 'Brisbane — state screening block', placesRemaining: 9 },
+]
+
+export function spartaAvailabilityForStage(stageId: PathwayStageId): {
+  showBookingTable: boolean
+  slots: SpartaTestingSlot[]
+  note: string
+} {
+  if (stageId === 'recreation' || stageId === 'learn-to-swim') {
+    return {
+      showBookingTable: false,
+      slots: [],
+      note: 'SPARTA II screening is aimed at junior squad and competitive pathway swimmers. When your athlete reaches that stage, upcoming test windows will appear here alongside expert outputs.',
+    }
+  }
+  return {
+    showBookingTable: true,
+    slots: SPARTA_TESTING_SLOTS_DEMO,
+    note: 'Book via your state pathway portal when open. Figures are illustrative — confirm dates with your club or state body.',
+  }
 }
 
 export const clubInfoByStage: Record<PathwayStageId, ClubInfo> = {

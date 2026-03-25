@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PageSection } from '../components/layout/PageSection'
 import { FederationMetricCard } from '../components/federation'
+import { NationalReachCard, ParticipationBreakdownCard } from '../components/federation/commercial'
 import { AustraliaSwimmerDensityMap } from '../components/federation/AustraliaSwimmerDensityMap'
 import {
   FEDERATION_SUMMARY_METRICS,
@@ -91,6 +92,19 @@ export function FederationDashboard() {
           icon={<Wallet className="h-5 w-5" />}
         />
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">Participation funnel &amp; national reach</h2>
+          <p className="mt-1 max-w-3xl text-sm text-text-muted">
+            Pathway width and state-level distribution — illustrative view for national oversight (demo figures).
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <ParticipationBreakdownCard />
+          <NationalReachCard />
+        </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Participation by state */}

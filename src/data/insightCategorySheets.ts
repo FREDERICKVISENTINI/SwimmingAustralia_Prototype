@@ -93,10 +93,10 @@ function generateGeographic(): Record<string, string>[] {
 function generateCommercialSponsorship(): Record<string, string>[] {
   return Array.from({ length: 100 }, (_, i) => ({
     'Member ID': memberId(i + 1),
-    'Engagement score': String(60 + (i % 35)),
-    'Reach': i % 5 === 0 ? 'National' : 'Regional',
-    'Demographic': AGE_GROUPS[i % AGE_GROUPS.length],
-    'Exposure': `${(i % 100)}%`,
+    'Cohort': i % 4 === 0 ? 'Sponsorable athlete' : i % 4 === 1 ? 'Parent household' : 'Event-linked',
+    'Segment tier': i % 3 === 0 ? 'National' : i % 3 === 1 ? 'State' : 'Regional',
+    'Pathway': ['LTS', 'Junior', 'Competitive', 'State'][i % 4],
+    'Package fit': i % 5 === 0 ? 'Family brand' : 'Performance',
   }))
 }
 
@@ -129,7 +129,7 @@ const SHEET_COLUMNS: Record<string, string[]> = {
   'consumer-behaviour': ['Member ID', 'Program', 'Equipment spend', 'Training freq', 'Participation pattern'],
   'competition-event': ['Member ID', 'Meet', 'Event', 'Time', 'Place', 'Qualified'],
   'geographic': ['Member ID', 'Postcode', 'Region', 'Club', 'Density band', 'Facility'],
-  'commercial-sponsorship': ['Member ID', 'Engagement score', 'Reach', 'Demographic', 'Exposure'],
+  'commercial-sponsorship': ['Member ID', 'Cohort', 'Segment tier', 'Pathway', 'Package fit'],
   'high-performance': ['Member ID', 'Stroke', 'Efficiency index', 'vs National std', 'Development indicator', 'Benchmark'],
 }
 

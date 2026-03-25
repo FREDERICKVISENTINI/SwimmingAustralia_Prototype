@@ -1,12 +1,23 @@
 /** Single source for federation dashboard section ids and labels. Used by Sidebar, FederationDashboard, and FederationSectionPage. */
+/** Order matches federation sidebar (routes are interleaved in Sidebar). */
 export const FEDERATION_SECTIONS = [
-  { id: 'participation-growth', label: 'Participation & Growth' },
-  { id: 'talent-identification', label: 'Talent Identification' },
-  { id: 'performance-pipeline', label: 'Performance Pipeline' },
-  { id: 'club-performance', label: 'Club Performance' },
-  { id: 'national-event-analytics', label: 'National Event Analytics' },
-  { id: 'commercial-sponsorship', label: 'Commercial & Sponsorship Insights' },
+  { id: 'player-database', label: 'Player database' },
+  { id: 'club-database', label: 'Club database' },
+  { id: 'system-health', label: 'System Health' },
+  { id: 'commercial', label: 'Commercial' },
+  { id: 'performance', label: 'Leverage AI' },
 ] as const
+
+/** Maps old section IDs (used in routes, insight categories, etc.) to their new equivalents. */
+export const LEGACY_SECTION_ID_MAP: Record<string, FederationSectionId> = {
+  'participation-growth': 'player-database',
+  retention: 'player-database',
+  'talent-identification': 'performance',
+  'performance-pipeline': 'system-health',
+  'club-performance': 'club-database',
+  'national-event-analytics': 'performance',
+  'commercial-sponsorship': 'commercial',
+}
 
 export type FederationSectionId = (typeof FEDERATION_SECTIONS)[number]['id']
 

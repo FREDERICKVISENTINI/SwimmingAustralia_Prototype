@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import type { ClubEvent, EventType, EventStatus, SwimClass } from '../../types/club'
 
 type FormValues = Omit<ClubEvent, 'id' | 'createdAt'>
@@ -5,6 +6,7 @@ type FormValues = Omit<ClubEvent, 'id' | 'createdAt'>
 type Props = {
   initial?: Partial<FormValues>
   squads: SwimClass[]
+  homePool?: string
   onSave: (values: FormValues) => void
   onCancel: () => void
   saving?: boolean
@@ -26,7 +28,7 @@ const STATUS_OPTIONS: { value: EventStatus; label: string }[] = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
-export function EventForm({ initial, squads, onSave, onCancel, saving = false }: Props) {
+export function EventForm({ initial, squads, homePool, onSave, onCancel, saving = false }: Props) {
   const defaultValues: FormValues = {
     title: '',
     eventType: 'training-session',
@@ -44,6 +46,18 @@ export function EventForm({ initial, squads, onSave, onCancel, saving = false }:
     ...initial,
   }
 
+  const isHomePool = !!homePool && !!defaultValues.location && defaultValues.location === homePool
+  const [useHomePool, setUseHomePool] = useState(isHomePool)
+  const [location, setLocation] = useState(defaultValues.location)
+  const locationRef = useRef<HTMLInputElement>(null)
+
+  function handleHomePoolToggle(checked: boolean) {
+    setUseHomePool(checked)
+    if (checked && homePool) {
+      setLocation(homePool)
+    }
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -56,7 +70,7 @@ export function EventForm({ initial, squads, onSave, onCancel, saving = false }:
       date: fd.get('date') as string,
       startTime: fd.get('startTime') as string,
       endTime: fd.get('endTime') as string,
-      location: (fd.get('location') as string).trim(),
+      location: location.trim(),
       squadId,
       squadName: squad?.name ?? null,
       capacity: Number(fd.get('capacity')) || 20,
@@ -120,8 +134,36 @@ export function EventForm({ initial, squads, onSave, onCancel, saving = false }:
 
       {/* Location */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-text-secondary">Location *</label>
-        <input name="location" required defaultValue={defaultValues.location} placeholder="Pool name or address" className={inputClass} />
+        <div className="mb-1.5 flex items-center justify-between gap-4">
+          <label className="text-sm font-medium text-text-secondary">Location *</label>
+          {homePool && (
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary select-none">
+              <input
+                type="checkbox"
+                checked={useHomePool}
+                onChange={(e) => handleHomePoolToggle(e.target.checked)}
+                className="h-4 w-4 rounded border-border text-accent accent-[var(--color-accent)] focus:ring-accent"
+              />
+              <span>
+                Home pool
+                <span className="ml-1.5 text-xs text-text-muted">({homePool})</span>
+              </span>
+            </label>
+          )}
+        </div>
+        <input
+          ref={locationRef}
+          name="location"
+          required
+          value={location}
+          onChange={(e) => {
+            setLocation(e.target.value)
+            if (useHomePool) setUseHomePool(false)
+          }}
+          placeholder="Pool name or address"
+          className={inputClass}
+          readOnly={useHomePool}
+        />
       </div>
 
       {/* Squad + Capacity + Cutoff */}

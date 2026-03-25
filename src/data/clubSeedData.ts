@@ -1,4 +1,5 @@
-import type { SwimClass, ClubSwimmer, PaymentRecord, StatUpload, ClubInstructor, ClubEvent, EventRegistration } from '../types/club'
+import type { UnifiedSwimmer } from '../types'
+import type { SwimClass, PaymentRecord, StatUpload, ClubInstructor, ClubEvent, EventRegistration, OutgoingPayment } from '../types/club'
 
 export const DEMO_CLASSES: SwimClass[] = [
   {
@@ -46,7 +47,7 @@ export const DEMO_CLASSES: SwimClass[] = [
 ]
 
 /** 30 swimmers: 10 in LTS Stage 3 (cls-1), 14 in Junior Squad A (cls-2), 6 in Competitive Squad (cls-3). */
-export const DEMO_CLUB_SWIMMERS: ClubSwimmer[] = [
+export const DEMO_CLUB_SWIMMERS: UnifiedSwimmer[] = [
   // cls-1 LTS Stage 3 (10 swimmers, age 5–7)
   { id: 'cs-1', firstName: 'Emma', lastName: 'Wilson', dateOfBirth: '2017-05-12', ageGroup: '7', classId: 'cls-1', className: 'LTS Stage 3', pathwayStageId: 'learn-to-swim', attendanceStatus: 'active', latestStatDate: '2025-03-01', paymentStatus: 'paid', parentGuardianName: 'James Wilson', contactEmail: 'j.wilson@example.com', contactPhone: '0412 345 678' },
   { id: 'cs-2', firstName: 'Oliver', lastName: 'Taylor', dateOfBirth: '2018-01-08', ageGroup: '6', classId: 'cls-1', className: 'LTS Stage 3', pathwayStageId: 'learn-to-swim', attendanceStatus: 'active', latestStatDate: '2025-02-28', paymentStatus: 'paid', parentGuardianName: 'Rachel Taylor', contactEmail: 'r.taylor@example.com', contactPhone: '0413 456 789' },
@@ -59,27 +60,27 @@ export const DEMO_CLUB_SWIMMERS: ClubSwimmer[] = [
   { id: 'cs-9', firstName: 'Grace', lastName: 'Thompson', dateOfBirth: '2017-12-03', ageGroup: '7', classId: 'cls-1', className: 'LTS Stage 3', pathwayStageId: 'learn-to-swim', attendanceStatus: 'active', latestStatDate: '2025-02-10', paymentStatus: 'paid', parentGuardianName: 'David Thompson', contactEmail: 'd.thompson@example.com', contactPhone: '0420 123 456' },
   { id: 'cs-10', firstName: 'Jack', lastName: 'Garcia', dateOfBirth: '2018-02-27', ageGroup: '6', classId: 'cls-1', className: 'LTS Stage 3', pathwayStageId: 'learn-to-swim', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'due', parentGuardianName: 'Maria Garcia', contactEmail: 'm.garcia@example.com', contactPhone: '0421 234 567' },
   // cls-2 Junior Squad A (14 swimmers, age 8–11)
-  { id: 'cs-11', firstName: 'Liam', lastName: 'Brown', dateOfBirth: '2016-08-03', ageGroup: '8', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-05', paymentStatus: 'due', talentFlags: ['coach-observation'], parentGuardianName: 'Sarah Brown', contactEmail: 'sarah.brown@example.com', contactPhone: '0423 456 789' },
-  { id: 'cs-12', firstName: 'Zara', lastName: 'Lee', dateOfBirth: '2015-02-20', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-08', paymentStatus: 'paid', talentFlags: ['rapid-improvement'], parentGuardianName: 'David Lee', contactEmail: 'd.lee@example.com', contactPhone: '0434 567 890' },
-  { id: 'cs-13', firstName: 'Ava', lastName: 'Martinez', dateOfBirth: '2013-04-08', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'overdue', parentGuardianName: 'Carlos Martinez', contactEmail: 'c.martinez@example.com', contactPhone: '0456 789 012' },
-  { id: 'cs-14', firstName: 'Ethan', lastName: 'Robinson', dateOfBirth: '2016-07-19', ageGroup: '8', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-06', paymentStatus: 'paid', parentGuardianName: 'Jenny Robinson', contactEmail: 'j.robinson@example.com', contactPhone: '0422 345 678' },
-  { id: 'cs-15', firstName: 'Chloe', lastName: 'Clark', dateOfBirth: '2015-10-12', ageGroup: '9', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-25', paymentStatus: 'paid', parentGuardianName: 'Michael Clark', contactEmail: 'm.clark@example.com', contactPhone: '0424 567 890' },
-  { id: 'cs-16', firstName: 'Lucas', lastName: 'Lewis', dateOfBirth: '2015-01-25', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', talentFlags: ['technique'], parentGuardianName: 'Emma Lewis', contactEmail: 'e.lewis@example.com', contactPhone: '0425 678 901' },
-  { id: 'cs-17', firstName: 'Freya', lastName: 'Walker', dateOfBirth: '2014-06-08', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-09', paymentStatus: 'paid', parentGuardianName: 'Chris Walker', contactEmail: 'c.walker@example.com', contactPhone: '0426 789 012' },
-  { id: 'cs-18', firstName: 'Oscar', lastName: 'Hall', dateOfBirth: '2014-09-30', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-15', paymentStatus: 'due', parentGuardianName: 'Fiona Hall', contactEmail: 'f.hall@example.com', contactPhone: '0427 890 123' },
-  { id: 'cs-19', firstName: 'Poppy', lastName: 'Allen', dateOfBirth: '2014-12-14', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Tom Allen', contactEmail: 't.allen@example.com', contactPhone: '0428 901 234' },
-  { id: 'cs-20', firstName: 'George', lastName: 'Young', dateOfBirth: '2014-03-07', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-10', paymentStatus: 'paid', talentFlags: ['coach-observation'], parentGuardianName: 'Helen Young', contactEmail: 'h.young@example.com', contactPhone: '0429 012 345' },
-  { id: 'cs-21', firstName: 'Evie', lastName: 'King', dateOfBirth: '2014-05-21', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-28', paymentStatus: 'paid', parentGuardianName: 'Peter King', contactEmail: 'p.king@example.com', contactPhone: '0430 123 456' },
-  { id: 'cs-22', firstName: 'Archie', lastName: 'Wright', dateOfBirth: '2013-11-02', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'inactive', latestStatDate: '2025-01-20', paymentStatus: 'overdue', parentGuardianName: 'Lucy Wright', contactEmail: 'l.wright@example.com', contactPhone: '0431 234 567' },
-  { id: 'cs-23', firstName: 'Florence', lastName: 'Scott', dateOfBirth: '2014-07-16', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-04', paymentStatus: 'paid', parentGuardianName: 'Andrew Scott', contactEmail: 'a.scott@example.com', contactPhone: '0432 345 678' },
-  { id: 'cs-24', firstName: 'Arthur', lastName: 'Green', dateOfBirth: '2013-08-09', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Natalie Green', contactEmail: 'n.green@example.com', contactPhone: '0433 456 789' },
+  { id: 'cs-11', firstName: 'Liam', lastName: 'Brown', dateOfBirth: '2016-08-03', ageGroup: '8', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-05', paymentStatus: 'due', talentFlags: ['coach-observation'], parentGuardianName: 'Sarah Brown', contactEmail: 'sarah.brown@example.com', contactPhone: '0423 456 789', spartaII: { testCompleted: false, reportReceived: false }, stateInsightNote: 'NSW pathway — eligible for SPARTA II screening (as an example) this term.' },
+  { id: 'cs-12', firstName: 'Zara', lastName: 'Lee', dateOfBirth: '2015-02-20', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-08', paymentStatus: 'paid', talentFlags: ['rapid-improvement'], parentGuardianName: 'David Lee', contactEmail: 'd.lee@example.com', contactPhone: '0434 567 890', spartaII: { testCompleted: true, reportReceived: false, lastTestDate: '2025-02-14' }, stateInsightNote: 'State report pending — uploaded test Feb 2025.' },
+  { id: 'cs-13', firstName: 'Ava', lastName: 'Martinez', dateOfBirth: '2013-04-08', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'overdue', parentGuardianName: 'Carlos Martinez', contactEmail: 'c.martinez@example.com', contactPhone: '0456 789 012', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-14', firstName: 'Ethan', lastName: 'Robinson', dateOfBirth: '2016-07-19', ageGroup: '8', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-06', paymentStatus: 'paid', parentGuardianName: 'Jenny Robinson', contactEmail: 'j.robinson@example.com', contactPhone: '0422 345 678', spartaII: { testCompleted: true, reportReceived: true, lastTestDate: '2024-11-20' } },
+  { id: 'cs-15', firstName: 'Chloe', lastName: 'Clark', dateOfBirth: '2015-10-12', ageGroup: '9', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-25', paymentStatus: 'paid', parentGuardianName: 'Michael Clark', contactEmail: 'm.clark@example.com', contactPhone: '0424 567 890', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-16', firstName: 'Lucas', lastName: 'Lewis', dateOfBirth: '2015-01-25', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', talentFlags: ['technique'], parentGuardianName: 'Emma Lewis', contactEmail: 'e.lewis@example.com', contactPhone: '0425 678 901', spartaII: { testCompleted: true, reportReceived: false, lastTestDate: '2025-01-08' } },
+  { id: 'cs-17', firstName: 'Freya', lastName: 'Walker', dateOfBirth: '2014-06-08', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-09', paymentStatus: 'paid', parentGuardianName: 'Chris Walker', contactEmail: 'c.walker@example.com', contactPhone: '0426 789 012', spartaII: { testCompleted: true, reportReceived: true, lastTestDate: '2024-10-01' } },
+  { id: 'cs-18', firstName: 'Oscar', lastName: 'Hall', dateOfBirth: '2014-09-30', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-15', paymentStatus: 'due', parentGuardianName: 'Fiona Hall', contactEmail: 'f.hall@example.com', contactPhone: '0427 890 123', spartaII: { testCompleted: false, reportReceived: false }, stateInsightNote: 'Consider SPARTA II before next state meet block.' },
+  { id: 'cs-19', firstName: 'Poppy', lastName: 'Allen', dateOfBirth: '2014-12-14', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Tom Allen', contactEmail: 't.allen@example.com', contactPhone: '0428 901 234', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-20', firstName: 'George', lastName: 'Young', dateOfBirth: '2014-03-07', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-10', paymentStatus: 'paid', talentFlags: ['coach-observation'], parentGuardianName: 'Helen Young', contactEmail: 'h.young@example.com', contactPhone: '0429 012 345', spartaII: { testCompleted: true, reportReceived: false, lastTestDate: '2025-03-01' } },
+  { id: 'cs-21', firstName: 'Evie', lastName: 'King', dateOfBirth: '2014-05-21', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-02-28', paymentStatus: 'paid', parentGuardianName: 'Peter King', contactEmail: 'p.king@example.com', contactPhone: '0430 123 456', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-22', firstName: 'Archie', lastName: 'Wright', dateOfBirth: '2013-11-02', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'inactive', latestStatDate: '2025-01-20', paymentStatus: 'overdue', parentGuardianName: 'Lucy Wright', contactEmail: 'l.wright@example.com', contactPhone: '0431 234 567', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-23', firstName: 'Florence', lastName: 'Scott', dateOfBirth: '2014-07-16', ageGroup: '10', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: '2025-03-04', paymentStatus: 'paid', parentGuardianName: 'Andrew Scott', contactEmail: 'a.scott@example.com', contactPhone: '0432 345 678', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-24', firstName: 'Arthur', lastName: 'Green', dateOfBirth: '2013-08-09', ageGroup: '11', classId: 'cls-2', className: 'Junior Squad A', pathwayStageId: 'junior-squad', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Natalie Green', contactEmail: 'n.green@example.com', contactPhone: '0433 456 789', spartaII: { testCompleted: true, reportReceived: true, lastTestDate: '2024-12-05' } },
   // cls-3 Competitive Squad (6 swimmers, age 12–16)
-  { id: 'cs-25', firstName: 'Noah', lastName: 'Smith', dateOfBirth: '2012-11-15', ageGroup: '12', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-10', paymentStatus: 'paid', talentFlags: ['technique', 'hp-signal'], pastClubs: [{ clubName: 'City Dolphins', from: '2020-03', to: '2023-06' }, { clubName: 'Current club', from: '2023-07', to: null }], parentGuardianName: 'Michelle Smith', contactEmail: 'm.smith@example.com', contactPhone: '0445 678 901' },
-  { id: 'cs-26', firstName: 'Ruby', lastName: 'Baker', dateOfBirth: '2012-04-28', ageGroup: '13', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-08', paymentStatus: 'paid', parentGuardianName: 'Daniel Baker', contactEmail: 'd.baker@example.com', contactPhone: '0446 789 012' },
-  { id: 'cs-27', firstName: 'Alfie', lastName: 'Adams', dateOfBirth: '2011-09-11', ageGroup: '13', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-09', paymentStatus: 'paid', talentFlags: ['rapid-improvement'], parentGuardianName: 'Sophie Adams', contactEmail: 's.adams@example.com', contactPhone: '0447 890 123' },
-  { id: 'cs-28', firstName: 'Daisy', lastName: 'Nelson', dateOfBirth: '2011-02-04', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-02-22', paymentStatus: 'due', parentGuardianName: 'Robert Nelson', contactEmail: 'r.nelson@example.com', contactPhone: '0448 901 234' },
-  { id: 'cs-29', firstName: 'Theo', lastName: 'Hill', dateOfBirth: '2010-06-17', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Claire Hill', contactEmail: 'c.hill@example.com', contactPhone: '0449 012 345' },
-  { id: 'cs-30', firstName: 'Millie', lastName: 'Campbell', dateOfBirth: '2010-12-01', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-07', paymentStatus: 'paid', parentGuardianName: 'Kevin Campbell', contactEmail: 'k.campbell@example.com', contactPhone: '0450 123 456' },
+  { id: 'cs-25', firstName: 'Noah', lastName: 'Smith', dateOfBirth: '2012-11-15', ageGroup: '12', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-10', paymentStatus: 'paid', talentFlags: ['technique', 'hp-signal'], pastClubs: [{ clubName: 'City Dolphins', from: '2020-03', to: '2023-06' }, { clubName: 'Current club', from: '2023-07', to: null }], parentGuardianName: 'Michelle Smith', contactEmail: 'm.smith@example.com', contactPhone: '0445 678 901', spartaII: { testCompleted: true, reportReceived: false, lastTestDate: '2025-02-20' }, stateInsightNote: 'HP pathway — state report due after competitive block.' },
+  { id: 'cs-26', firstName: 'Ruby', lastName: 'Baker', dateOfBirth: '2012-04-28', ageGroup: '13', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-08', paymentStatus: 'paid', parentGuardianName: 'Daniel Baker', contactEmail: 'd.baker@example.com', contactPhone: '0446 789 012', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-27', firstName: 'Alfie', lastName: 'Adams', dateOfBirth: '2011-09-11', ageGroup: '13', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-09', paymentStatus: 'paid', talentFlags: ['rapid-improvement'], parentGuardianName: 'Sophie Adams', contactEmail: 's.adams@example.com', contactPhone: '0447 890 123', spartaII: { testCompleted: true, reportReceived: true, lastTestDate: '2024-09-15' } },
+  { id: 'cs-28', firstName: 'Daisy', lastName: 'Nelson', dateOfBirth: '2011-02-04', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-02-22', paymentStatus: 'due', parentGuardianName: 'Robert Nelson', contactEmail: 'r.nelson@example.com', contactPhone: '0448 901 234', spartaII: { testCompleted: false, reportReceived: false } },
+  { id: 'cs-29', firstName: 'Theo', lastName: 'Hill', dateOfBirth: '2010-06-17', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: null, paymentStatus: 'paid', parentGuardianName: 'Claire Hill', contactEmail: 'c.hill@example.com', contactPhone: '0449 012 345', spartaII: { testCompleted: true, reportReceived: false, lastTestDate: '2024-12-18' } },
+  { id: 'cs-30', firstName: 'Millie', lastName: 'Campbell', dateOfBirth: '2010-12-01', ageGroup: '14', classId: 'cls-3', className: 'Competitive Squad', pathwayStageId: 'competitive-club', attendanceStatus: 'active', latestStatDate: '2025-03-07', paymentStatus: 'paid', parentGuardianName: 'Kevin Campbell', contactEmail: 'k.campbell@example.com', contactPhone: '0450 123 456', spartaII: { testCompleted: true, reportReceived: true, lastTestDate: '2025-01-10' } },
 ]
 
 export const DEMO_PAYMENTS: PaymentRecord[] = [
@@ -122,8 +123,110 @@ export const DEMO_INSTRUCTORS: ClubInstructor[] = [
     classIds: ['cls-1'],
     bankDetailsComplete: true,
     workingWithChildrenComplete: false,
+    phone: '0433 444 555',
     accreditationLevel: 'Learn-to-Swim',
     notes: 'WWCC verification pending. Assists with LTS Stage 3.',
+  },
+  {
+    id: 'inst-4',
+    fullName: 'Priya Nair',
+    memberNumber: 'AUS-2024-3341',
+    email: 'priya.nair@example.com',
+    classIds: ['cls-2', 'cls-3'],
+    bankDetailsComplete: true,
+    workingWithChildrenComplete: true,
+    phone: '0444 555 666',
+    accreditationLevel: 'Junior Squad, Competitive Squad',
+    notes: 'Assists across Junior and Competitive squads. Available Tue, Thu, Sat.',
+  },
+  {
+    id: 'inst-5',
+    fullName: 'Ben Watts',
+    memberNumber: 'AUS-2023-7890',
+    email: 'ben.watts@example.com',
+    classIds: ['cls-4'],
+    bankDetailsComplete: false,
+    workingWithChildrenComplete: false,
+    phone: '0455 666 777',
+    accreditationLevel: 'State Prep',
+    notes: 'New to the club this term. Bank details and WWCC both outstanding — follow up before sessions begin.',
+  },
+]
+
+// ─── Outgoing payments ────────────────────────────────────────────────────────
+
+export const DEMO_OUTGOING_PAYMENTS: OutgoingPayment[] = [
+  // Staff — instructor pay
+  {
+    id: 'out-1',
+    category: 'staff',
+    recipient: 'Mike Torres',
+    description: 'Coaching pay — Term 1 (Jan–Mar 2026)',
+    amount: 2400,
+    date: '2026-03-28',
+    status: 'paid',
+    reference: 'PAY-2026-031',
+  },
+  {
+    id: 'out-2',
+    category: 'staff',
+    recipient: 'Sarah Chen',
+    description: 'Coaching pay — Term 1 (Jan–Mar 2026)',
+    amount: 2800,
+    date: '2026-03-28',
+    status: 'paid',
+    reference: 'PAY-2026-032',
+  },
+  {
+    id: 'out-3',
+    category: 'staff',
+    recipient: 'Jordan Lee',
+    description: 'Casual session pay — 6 sessions (Feb–Mar)',
+    amount: 360,
+    date: '2026-03-31',
+    status: 'pending',
+    reference: 'PAY-2026-033',
+  },
+  {
+    id: 'out-4',
+    category: 'staff',
+    recipient: 'Priya Nair',
+    description: 'Coaching pay — Term 1 (Jan–Mar 2026)',
+    amount: 2200,
+    date: '2026-03-28',
+    status: 'paid',
+    reference: 'PAY-2026-034',
+  },
+  {
+    id: 'out-5',
+    category: 'staff',
+    recipient: 'Ben Watts',
+    description: 'Casual session pay — 3 sessions (Mar)',
+    amount: 180,
+    date: '2026-04-05',
+    status: 'scheduled',
+    reference: 'PAY-2026-035',
+  },
+  // HP products & subscriptions
+  {
+    id: 'out-6',
+    category: 'hp-product',
+    recipient: 'AusSwim Platform',
+    description: 'Club management platform — monthly subscription',
+    amount: 199,
+    date: '2026-03-01',
+    status: 'paid',
+    reference: 'SUB-2026-03',
+  },
+  {
+    id: 'out-7',
+    category: 'hp-product',
+    recipient: 'Swimming Australia',
+    description: 'State Championships entry fees — 8 swimmers',
+    amount: 480,
+    date: '2026-03-15',
+    status: 'paid',
+    reference: 'ENTRY-SC2026',
   },
 ]
 

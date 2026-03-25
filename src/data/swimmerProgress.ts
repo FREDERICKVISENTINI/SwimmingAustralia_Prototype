@@ -45,7 +45,7 @@ export function getProgressionTimeline(profile: SwimmerProfile | null): Progress
   if (demo?.length) return [...demo].sort((a, b) => b.date.localeCompare(a.date))
 
   const events: ProgressionEvent[] = []
-  const stage = PATHWAY_STAGES.find((s) => s.id === profile.pathwayStage)
+  const stage = PATHWAY_STAGES.find((s) => s.id === profile.pathwayStageId)
   if (profile.program) {
     events.push({
       date: profile.dateOfBirth ? profile.dateOfBirth.slice(0, 4) + '-01-01' : new Date().toISOString().slice(0, 10),
@@ -72,7 +72,7 @@ export function getMilestoneBadges(profile: SwimmerProfile | null): MilestoneBad
   const demo = DEMO_BADGES[profile.id]
   if (demo?.length) return demo
 
-  const stage = PATHWAY_STAGES.find((s) => s.id === profile.pathwayStage)
+  const stage = PATHWAY_STAGES.find((s) => s.id === profile.pathwayStageId)
   if (!stage) return []
   return [
     {

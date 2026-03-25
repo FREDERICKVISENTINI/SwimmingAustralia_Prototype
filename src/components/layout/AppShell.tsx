@@ -1,13 +1,18 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { FederationLightPageContext } from '../../context/FederationLightPageContext'
-import { isFederationLightThemeRoute } from '../../routes'
+import { isFederationLightThemeRoute, ROUTES } from '../../routes'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 
 export function AppShell() {
   const { accountType } = useApp()
   const { pathname } = useLocation()
+
+  /** Root URL always lands on sign-in (demo entry) — skip shell so the page doesn’t flash chrome. */
+  if (pathname === '/') {
+    return <Navigate to={ROUTES.signIn} replace />
+  }
   const isFederation = accountType === 'federation'
   const federationLightPage =
     isFederation && isFederationLightThemeRoute(pathname)

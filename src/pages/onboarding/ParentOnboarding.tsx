@@ -16,11 +16,15 @@ const DEMO_SWIMMER: Partial<SwimmerProfile> = {
   lastName: 'Swimmer',
   dateOfBirth: '2015-06-01',
   gender: 'Other',
-  program: 'Demo Club',
   state: 'NSW',
   notes: '',
-  pathwayStage: 'learn-to-swim',
+  pathwayStageId: 'learn-to-swim',
   memberId: 'AUS-2025-001',
+  classId: null,
+  className: null,
+  attendanceStatus: 'active',
+  latestStatDate: null,
+  paymentStatus: null,
 }
 
 const pageStyle = {
@@ -67,11 +71,15 @@ export function ParentOnboarding() {
       lastName: formData.lastName ?? DEMO_SWIMMER.lastName ?? 'Swimmer',
       dateOfBirth: formData.dateOfBirth ?? DEMO_SWIMMER.dateOfBirth ?? '2015-06-01',
       gender: formData.gender ?? DEMO_SWIMMER.gender ?? 'Other',
-      program: formData.program ?? DEMO_SWIMMER.program ?? 'Demo Club',
       state: formData.state ?? DEMO_SWIMMER.state ?? 'NSW',
       notes: formData.notes ?? '',
-      pathwayStage: formData.pathwayStage ?? DEMO_SWIMMER.pathwayStage ?? 'learn-to-swim',
+      pathwayStageId: formData.pathwayStageId ?? DEMO_SWIMMER.pathwayStageId ?? 'learn-to-swim',
       memberId: formData.memberId ?? DEMO_SWIMMER.memberId ?? 'AUS-2025-001',
+      classId: null,
+      className: null,
+      attendanceStatus: 'active',
+      latestStatDate: null,
+      paymentStatus: null,
     }
     addSwimmer(profile)
     completeParentOnboarding()
@@ -87,8 +95,8 @@ export function ParentOnboarding() {
       )}
       {step === 3 && (
         <ParentPathwayStage
-          selected={formData.pathwayStage ?? ''}
-          onSelect={(pathwayStage) => setFormData((p) => ({ ...p, pathwayStage }))}
+          selected={formData.pathwayStageId ?? ''}
+          onSelect={(pathwayStageId) => setFormData((p) => ({ ...p, pathwayStageId }))}
           onNext={() => setStep(4)}
         />
       )}

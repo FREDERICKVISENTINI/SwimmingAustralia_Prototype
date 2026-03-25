@@ -62,6 +62,7 @@ export function FilterBar({ filters, onFilterChange }: Props) {
           <option value="melbourne-vicentre">Melbourne Vicentre</option>
           <option value="sopac">SOPAC</option>
           <option value="chandler">Chandler</option>
+          <option value="other">Other clubs</option>
         </select>
         <select
           value={filters.pathwayStage}

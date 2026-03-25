@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, CreditCard, User, Map, CalendarDays, BookOpen } from 'lucide-react'
+import { Users, CreditCard, User, Map, CalendarDays } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import { Card } from '../components/ui/Card'
@@ -14,7 +14,7 @@ export function Dashboard() {
   const familyCount = swimmers.length
 
   const currentStageLabel = swimmerProfile
-    ? PATHWAY_STAGES.find((s) => s.id === swimmerProfile.pathwayStage)?.label ?? swimmerProfile.pathwayStage
+    ? PATHWAY_STAGES.find((s) => s.id === swimmerProfile.pathwayStageId)?.label ?? swimmerProfile.pathwayStageId
     : null
 
   const swimmerIds = useMemo(() => swimmers.map((s) => s.id), [swimmers])
@@ -36,7 +36,7 @@ export function Dashboard() {
       {isMember && (
         <>
           {/* Top quick-link cards */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="max-w-xl">
             <Link
               to={ROUTES.app.profile}
               className="block rounded-[var(--radius-card)] border border-border/80 bg-card p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)] hover:border-accent/30"
@@ -57,24 +57,6 @@ export function Dashboard() {
                 </div>
               </div>
               <p className="mt-3 text-sm font-medium text-accent">Manage family →</p>
-            </Link>
-
-            <Link
-              to={ROUTES.app.myEvents}
-              className="block rounded-[var(--radius-card)] border border-border/80 bg-card p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)] hover:border-accent/30"
-            >
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-accent/15 p-2.5">
-                  <BookOpen className="h-6 w-6 text-accent" />
-                </div>
-                <div>
-                  <h2 className="font-display text-lg font-semibold text-text-primary">My events</h2>
-                  <p className="text-sm text-text-secondary">
-                    Events your swimmers are registered for.
-                  </p>
-                </div>
-              </div>
-              <p className="mt-3 text-sm font-medium text-accent">View registrations →</p>
             </Link>
           </div>
 
@@ -136,8 +118,8 @@ export function Dashboard() {
                   <>
                     <p className="mt-2 font-display text-2xl font-semibold text-text-primary">{count}</p>
                     <p className="mt-0.5 text-sm text-text-secondary">upcoming event{count !== 1 ? 's' : ''} registered</p>
-                    <Link to={ROUTES.app.myEvents} className="mt-3 inline-block text-sm font-medium text-accent hover:underline">
-                      View my events →
+                    <Link to={ROUTES.app.events} className="mt-3 inline-block text-sm font-medium text-accent hover:underline">
+                      View events →
                     </Link>
                   </>
                 ) : (

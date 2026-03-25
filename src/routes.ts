@@ -1,6 +1,5 @@
 /**
  * Central route paths for the Swimming Australia prototype.
- * Keeps navigation and redirects consistent.
  */
 export const ROUTES = {
   signIn: '/sign-in',
@@ -16,21 +15,20 @@ export const ROUTES = {
     index: '/',
     dashboard: '/dashboard',
     teamDashboard: '/team-dashboard',
-    coachDashboard: '/coach-dashboard',
     federationDashboard: '/federation-dashboard',
-    /** Federation insight section (e.g. participation-growth). */
+    federationDataInfrastructure: '/federation-dashboard/data-infrastructure',
     federationDashboardSection: (sectionId: string) => `/federation-dashboard/section/${sectionId}`,
     profile: '/profile',
     profileSettings: '/profile/settings',
     pathway: '/pathway',
-    calendar: '/calendar',
-    assessments: '/assessments',
+    pathwayHighPerformance: '/pathway/high-performance',
     insights: '/insights',
-    /** Deep link to actionable insights (Overview tab + scroll). */
-    insightsActionable: '/insights#actionable',
-    /** Single insight category page (e.g. participation, talent-signals). */
-    insightCategory: (categoryId: string) => `/insights/category/${categoryId}`,
-    services: '/services',
+    hpProducts: '/hp-products',
+    /** Parent & club: monetisation / tiers / premium (commercial demo). */
+    plans: '/plans',
+    calendar: '/calendar',
+    /** Club events list (nested under Calendar in the app shell). */
+    calendarEvents: '/calendar/events',
     classes: '/classes',
     classDetail: (id: string) => `/classes/${id}`,
     swimmers: '/swimmers',
@@ -39,20 +37,18 @@ export const ROUTES = {
     instructorDetail: (id: string) => `/instructors/${id}`,
     payments: '/payments',
     stats: '/stats',
-    events: '/events',
+    /** Events browse/manage — lives under Calendar as the Events sub-view. */
+    events: '/calendar/events',
     eventCreate: '/events/new',
     eventDetail: (id: string) => `/events/${id}`,
     eventEdit: (id: string) => `/events/${id}/edit`,
-    myEvents: '/my-events',
   },
 } as const
 
-/**
- * Federation: light shell (dashboard, sections, profile, settings).
- */
 export function isFederationLightThemeRoute(pathname: string): boolean {
   return (
     pathname === ROUTES.app.federationDashboard ||
+    pathname === ROUTES.app.federationDataInfrastructure ||
     pathname.startsWith(`${ROUTES.app.federationDashboard}/section/`) ||
     pathname === ROUTES.app.profile ||
     pathname === ROUTES.app.profileSettings

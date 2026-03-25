@@ -33,10 +33,14 @@ const emptyNewSwimmer: Omit<SwimmerProfile, 'id'> = {
   lastName: '',
   dateOfBirth: '',
   gender: '',
-  program: '',
   state: '',
   notes: '',
-  pathwayStage: 'learn-to-swim',
+  pathwayStageId: 'learn-to-swim',
+  classId: null,
+  className: null,
+  attendanceStatus: 'active',
+  latestStatDate: null,
+  paymentStatus: null,
 }
 
 function ProfileRow({
@@ -160,8 +164,8 @@ function AddSwimmerForm({
         <div className="sm:col-span-2">
           <label className="mb-1 block text-xs text-text-muted">Pathway stage</label>
           <select
-            value={form.pathwayStage}
-            onChange={(e) => onChange({ ...form, pathwayStage: e.target.value })}
+            value={form.pathwayStageId}
+            onChange={(e) => onChange({ ...form, pathwayStageId: e.target.value })}
             className="w-full rounded-[var(--radius-button)] border border-border bg-bg px-3 py-2 text-text-primary"
           >
             {PATHWAY_STAGES.map((s) => (
@@ -203,7 +207,7 @@ function ClubProfileView() {
   const { teamProfile, user, clubClasses, clubSwimmers, clubPayments } = useApp()
   if (!teamProfile) return null
   const orgTypeLabel = ORG_TYPE_LABELS[teamProfile.organisationType] ?? teamProfile.organisationType
-  const pathwayLabelsFromClasses = [...new Set(clubClasses.map((c) => c.pathwayStageId))]
+  const pathwayLabelsFromClasses = [...new Set(clubClasses.map((c) => c.pathwayStageIdId))]
     .map((id) => PATHWAY_STAGES.find((s) => s.id === id)?.label ?? id.replace(/-/g, ' '))
     .filter(Boolean)
   const pathwaySummary = pathwayLabelsFromClasses.length > 1
@@ -263,6 +267,7 @@ export function SwimmerProfile() {
     setActiveSwimmerId,
     addSwimmer,
     removeSwimmer,
+    isFamilyAccount,
   } = useApp()
   const [editing, setEditing] = useState<null | 'name' | 'personal' | 'club'>(null)
   const [editForm, setEditForm] = useState<Partial<SwimmerProfile>>({})
@@ -275,7 +280,7 @@ export function SwimmerProfile() {
 
   const handleAddSwimmer = () => {
     if (!newSwimmer.firstName?.trim() || !newSwimmer.lastName?.trim()) return
-    addSwimmer({ ...newSwimmer, pathwayStage: newSwimmer.pathwayStage || 'learn-to-swim' })
+    addSwimmer({ ...newSwimmer, pathwayStageId: newSwimmer.pathwayStageId || 'learn-to-swim' })
     setNewSwimmer(emptyNewSwimmer)
     setShowAddSwimmer(false)
   }
@@ -354,7 +359,7 @@ export function SwimmerProfile() {
       setEditForm({
         dateOfBirth: swimmerProfile.dateOfBirth,
         gender: swimmerProfile.gender,
-        pathwayStage: swimmerProfile.pathwayStage,
+        pathwayStageId: swimmerProfile.pathwayStageId,
         notes: swimmerProfile.notes,
       })
     } else {
@@ -503,8 +508,8 @@ export function SwimmerProfile() {
               <div>
                 <label className="mb-1 block text-xs text-text-muted">Pathway stage</label>
                 <select
-                  value={editForm.pathwayStage ?? ''}
-                  onChange={(e) => setEditForm((f) => ({ ...f, pathwayStage: e.target.value }))}
+                  value={editForm.pathwayStageId ?? ''}
+                  onChange={(e) => setEditForm((f) => ({ ...f, pathwayStageId: e.target.value }))}
                   className="w-full rounded-[var(--radius-button)] border border-border bg-bg px-3 py-2 text-text-primary"
                 >
                   {PATHWAY_STAGES.map((s) => (
@@ -540,7 +545,7 @@ export function SwimmerProfile() {
               />
               <ProfileRow
                 label="Pathway stage"
-                value={PATHWAY_STAGES.find((s) => s.id === swimmerProfile.pathwayStage)?.label ?? swimmerProfile.pathwayStage ?? '—'}
+                value={PATHWAY_STAGES.find((s) => s.id === swimmerProfile.pathwayStageId)?.label ?? swimmerProfile.pathwayStageId ?? '—'}
                 onEdit={() => startEdit('personal')}
               />
               <ProfileRow
@@ -585,9 +590,9 @@ export function SwimmerProfile() {
 
           {/* Next pathway step */}
           {(() => {
-            const content = getPathwayStageContent(swimmerProfile.pathwayStage)
+            const content = getPathwayStageContent(swimmerProfile.pathwayStageId)
             const next = content?.nextStep
-            if (!next || swimmerProfile.pathwayStage === 'recreation') return null
+            if (!next || swimmerProfile.pathwayStageId === 'recreation') return null
             return (
               <div className="mt-4">
                 <p className="mb-1 text-xs font-medium uppercase tracking-wider text-text-muted">Next step</p>
@@ -697,12 +702,36 @@ export function SwimmerProfile() {
         </section>
 
         {isParentManaged && (
-          <section className="rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-[var(--shadow-card)] md:p-6">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
-              Family
+          <section
+            className={`rounded-[var(--radius-card)] border p-5 shadow-[var(--shadow-card)] md:p-6 ${
+              isFamilyAccount
+                ? 'border-success/40 bg-success/[0.08] ring-1 ring-success/20'
+                : 'border-border bg-card'
+            }`}
+          >
+            <h2 className="flex flex-wrap items-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
+              <span>Family</span>
+              {isFamilyAccount && (
+                <span className="rounded-full bg-success/20 px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-success">
+                  Family account
+                </span>
+              )}
             </h2>
             <p className="mt-2 text-sm text-text-secondary">
-              Swimmers on your account. Select who to view above, or add another.
+              {isFamilyAccount ? (
+                <>
+                  This login is a <strong className="font-medium text-success">family account</strong> — several swimmers
+                  are linked here (the app treats this as one household). Swimmers on your account are listed below; use{' '}
+                  <strong className="font-medium text-text-primary">View</strong> to switch the profile you&apos;re editing, or add
+                  another family member.
+                </>
+              ) : (
+                <>
+                  Swimmers on your account. Select who to view above, or add another. When you add a second swimmer, this
+                  section highlights as a <strong className="font-medium text-text-primary">family account</strong> for your
+                  household.
+                </>
+              )}
             </p>
             <ul className="mt-4 space-y-2">
               {swimmers.map((s) => (

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { CalendarEvent, CalendarEventType } from '../../types/calendar'
 import { EventTypeBadge } from './EventTypeBadge'
 
@@ -8,11 +9,11 @@ type Props = {
   events: CalendarEvent[]
 }
 
-/** Dot color by type: training = blue, competition/club-event = red, rest = neutral. */
-function getDotColor(type: CalendarEventType): string {
-  if (type === 'training') return 'bg-[#35C7F3]' // accent blue
-  if (type === 'competition' || type === 'club-event') return 'bg-[#E8534C]' // red
-  return 'bg-[#8FB2C9]' // muted
+/** Mini grid dots: only training (blue) and competition / club-event (red). No grey “other” dots. */
+function getDotColorClass(type: CalendarEventType): string | null {
+  if (type === 'training') return 'bg-[#35C7F3]'
+  if (type === 'competition' || type === 'club-event') return 'bg-[#E8534C]'
+  return null
 }
 
 /** Left border / accent for upcoming card by type. */
@@ -42,6 +43,31 @@ function toYMD(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
+/** Monday (local) of the week containing dateStr — used to cap training dots. */
+function weekKeyMonday(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00')
+  const dow = d.getDay()
+  const mondayOffset = dow === 0 ? -6 : 1 - dow
+  const mon = new Date(d)
+  mon.setDate(d.getDate() + mondayOffset)
+  return mon.toISOString().slice(0, 10)
+}
+
+/**
+ * Fewer training dots on the mini grid: at most one training marker per week (first training day in that week).
+ * Non-training events (meets, assessments, etc.) are unchanged.
+ */
+function reduceTrainingDotsForMonth(events: CalendarEvent[]): CalendarEvent[] {
+  const nonTraining = events.filter((e) => e.type !== 'training')
+  const training = events.filter((e) => e.type === 'training')
+  const byWeek = new Map<string, CalendarEvent>()
+  for (const e of training.sort((a, b) => a.date.localeCompare(b.date))) {
+    const wk = weekKeyMonday(e.date)
+    if (!byWeek.has(wk)) byWeek.set(wk, e)
+  }
+  return [...nonTraining, ...byWeek.values()]
+}
+
 /** Per date, pick one event type for the dot (prefer training then competition then other). */
 function getDotTypeForDate(events: CalendarEvent[], dateStr: string): CalendarEventType | null {
   const onDay = events.filter((e) => e.date === dateStr)
@@ -54,6 +80,8 @@ function getDotTypeForDate(events: CalendarEvent[], dateStr: string): CalendarEv
 }
 
 export function MiniCalendarWithUpcoming({ focusDate, events }: Props) {
+  const eventsForDots = useMemo(() => reduceTrainingDotsForMonth(events), [events])
+
   const monthStart = getMonthStart(focusDate)
   const monthEnd = getMonthEnd(focusDate)
   const startPad = monthStart.getDay()
@@ -95,17 +123,28 @@ export function MiniCalendarWithUpcoming({ focusDate, events }: Props) {
             if (d === null) {
               return <div key={`pad-${i}`} className="min-h-[28px]" />
             }
-            const dateStr = toYMD(addDays(monthStart, d - 1))
-            const dotType = getDotTypeForDate(events, dateStr)
+            const cellDate = addDays(monthStart, d - 1)
+            const dateStr = toYMD(cellDate)
+            const isThursday = cellDate.getDay() === 4
+            const dotType = getDotTypeForDate(eventsForDots, dateStr)
+            /** Red for meets/club events; otherwise blue on every Thursday (prototype squad night); else event-based blue. */
+            let dotClass: string | null = null
+            if (dotType && (dotType === 'competition' || dotType === 'club-event')) {
+              dotClass = getDotColorClass(dotType)
+            } else if (isThursday) {
+              dotClass = 'bg-[#35C7F3]'
+            } else {
+              dotClass = dotType ? getDotColorClass(dotType) : null
+            }
             return (
               <div
                 key={d}
                 className="flex min-h-[28px] flex-col items-center justify-center rounded text-xs text-slate-700"
               >
                 <span>{d}</span>
-                {dotType && (
+                {dotClass && (
                   <span
-                    className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${getDotColor(dotType)}`}
+                    className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${dotClass}`}
                     aria-hidden
                   />
                 )}

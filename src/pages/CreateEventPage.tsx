@@ -5,7 +5,7 @@ import { EventForm } from '../components/events/EventForm'
 import { ROUTES } from '../routes'
 
 export function CreateEventPage() {
-  const { accountType, addClubEvent, clubClasses, user } = useApp()
+  const { accountType, addClubEvent, clubClasses, user, teamProfile } = useApp()
   const navigate = useNavigate()
 
   if (accountType !== 'club') {
@@ -21,6 +21,7 @@ export function CreateEventPage() {
       <div className="max-w-2xl">
         <EventForm
           squads={clubClasses}
+          homePool={teamProfile?.homePool}
           initial={{ coachName: user?.name ?? '' }}
           onSave={(values) => {
             addClubEvent(values)

@@ -28,7 +28,7 @@ export function InstructorDetail() {
         <Card className="p-6">
           <p className="text-text-muted">This instructor could not be found.</p>
           <Link to={ROUTES.app.classes} className="mt-3 inline-block text-sm font-medium text-accent hover:underline">
-            ← Back to Class management
+            ← Back to Squads
           </Link>
         </Card>
       </PageSection>
@@ -39,16 +39,16 @@ export function InstructorDetail() {
     <PageSection
       title={instructor.fullName}
       subtitle="Instructor profile and compliance."
-    >
-      <div className="mb-6 flex flex-wrap items-center gap-3">
+      headerAction={
         <button
           type="button"
           onClick={() => navigate(ROUTES.app.classes)}
-          className="text-sm font-medium text-accent hover:underline"
+          className="flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-accent transition-colors"
         >
-          ← Back to Class management
+          ← Back to Squads
         </button>
-      </div>
+      }
+    >
 
       <div className="space-y-6">
         {/* Contact & identity */}

@@ -5,9 +5,11 @@ type Props = {
   onClose: () => void
   title: string
   children: React.ReactNode
+  /** Override inner panel width (default max-w-lg). */
+  panelClassName?: string
 }
 
-export function Modal({ open, onClose, title, children }: Props) {
+export function Modal({ open, onClose, title, children, panelClassName }: Props) {
   useEffect(() => {
     if (!open) return
     const handleEscape = (e: KeyboardEvent) => {
@@ -36,7 +38,7 @@ export function Modal({ open, onClose, title, children }: Props) {
         aria-hidden="true"
       />
       <div
-        className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[var(--radius-card)] border border-border bg-card shadow-[var(--shadow-card)]"
+        className={`relative z-10 w-full max-h-[90vh] overflow-y-auto rounded-[var(--radius-card)] border border-border bg-card shadow-[var(--shadow-card)] ${panelClassName ?? 'max-w-lg'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-5 py-4">

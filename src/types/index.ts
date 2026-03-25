@@ -3,6 +3,7 @@
  * Keeps account and profile data shapes in one place.
  */
 import type { AccountType } from '../theme/tokens'
+import type { TalentFlagType } from './club'
 
 export type { AccountType }
 
@@ -11,20 +12,65 @@ export type User = {
   email: string
 }
 
-export type SwimmerProfile = {
-  /** Unique id for this swimmer (used for family list and selection). */
+/**
+ * Unified swimmer entity — the single source of truth for every swimmer
+ * across parent, club, and federation views.
+ */
+export type UnifiedSwimmer = {
   id: string
   firstName: string
   lastName: string
   dateOfBirth: string
-  gender: string
-  program: string
-  state: string
-  notes: string
-  pathwayStage: string
-  /** Member / registration ID (e.g. from Swimming Australia or club). */
+  gender?: string
+  ageGroup?: string
+  state?: string
   memberId?: string
+
+  // Club / squad
+  classId: string | null
+  className: string | null
+  coachId?: string
+  coachName?: string
+
+  // Pathway
+  pathwayStageId: string
+
+  // Engagement
+  attendanceStatus: 'active' | 'inactive' | 'on-hold'
+  latestStatDate: string | null
+  lastAttendanceDate?: string | null
+
+  // Payment
+  paymentStatus: 'paid' | 'due' | 'overdue' | 'partial' | null
+
+  // Talent
+  talentFlags?: TalentFlagType[]
+
+  // Contact / family
+  contactEmail?: string
+  contactPhone?: string
+  parentGuardianName?: string
+
+  // History
+  pastClubs?: { clubName: string; from: string; to: string | null }[]
+
+  // Notes
+  notes?: string
+
+  // HP screening
+  spartaII?: {
+    testCompleted: boolean
+    reportReceived: boolean
+    lastTestDate?: string | null
+  }
+  stateInsightNote?: string
+
+  /** Parent account ID that "owns" this swimmer (for parent view). */
+  parentAccountId?: string
 }
+
+/** @deprecated Use UnifiedSwimmer instead */
+export type SwimmerProfile = UnifiedSwimmer
 
 export type OrganisationType =
   | 'club'
@@ -42,6 +88,7 @@ export type TeamProfile = {
   numberOfSwimmers: string
   primaryPathwayStageServed: string
   description: string
+  homePool?: string
 }
 
 export type CoachProfile = {

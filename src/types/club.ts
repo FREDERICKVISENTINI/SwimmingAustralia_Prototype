@@ -1,3 +1,5 @@
+import type { UnifiedSwimmer } from './index'
+
 export type ClassType =
   | 'learn-to-swim'
   | 'junior-squad'
@@ -20,36 +22,15 @@ export type SwimClass = {
   pathwayStageId: string
 }
 
-/** Talent / HP signals for coach view. Not only race results—technique, improvement, observation. */
+/** Talent / HP signals for coach view. */
 export type TalentFlagType =
   | 'technique'
   | 'rapid-improvement'
   | 'coach-observation'
   | 'hp-signal'
 
-export type ClubSwimmer = {
-  id: string
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  ageGroup: string
-  classId: string | null
-  className: string | null
-  pathwayStageId: string
-  attendanceStatus: 'active' | 'inactive' | 'on-hold'
-  latestStatDate: string | null
-  paymentStatus: 'paid' | 'due' | 'overdue' | 'partial' | null
-  /** Coach / HP talent flags: technique assessment, improvement trend, observation (not only times). */
-  talentFlags?: TalentFlagType[]
-  /** Club history for profile view (current club first; to null = current). */
-  pastClubs?: { clubName: string; from: string; to: string | null }[]
-  /** Contact (parent/guardian) for club use. */
-  contactEmail?: string
-  contactPhone?: string
-  parentGuardianName?: string
-  /** Coach notes / event notes for this swimmer. */
-  notes?: string
-}
+/** @deprecated Use UnifiedSwimmer from types/index instead. Kept as alias for backward compat. */
+export type ClubSwimmer = UnifiedSwimmer
 
 export type FeeType = 'term' | 'assessment' | 'camp' | 'competition' | 'squad' | 'other'
 
@@ -90,24 +71,16 @@ export type ClubCoach = {
   classIds: string[]
 }
 
-/** Instructor linked via personal AusSwim account; used for classes. */
 export type ClubInstructor = {
   id: string
   fullName: string
-  /** AusSwim member number from their personal account. */
   memberNumber: string
   email: string
-  /** Class IDs this instructor is assigned to. */
   classIds: string[]
-  /** Set when instructor has completed bank details in their account. */
   bankDetailsComplete: boolean
-  /** Working with Children Check / accreditation verified. */
   workingWithChildrenComplete: boolean
-  /** Contact phone (instructor profile). */
   phone?: string
-  /** Accreditation level e.g. Learn-to-Swim, Junior Squad, Competitive. */
   accreditationLevel?: string
-  /** Club notes about this instructor. */
   notes?: string
 }
 
@@ -120,7 +93,33 @@ export type AttendanceSummary = {
   total: number
 }
 
-// ─── Event management ────────────────────────────────────────────────────────
+/** Individual attendance record for a single event. */
+export type AttendanceRecord = {
+  id: string
+  eventId: string
+  swimmerId: string
+  swimmerName: string
+  date: string
+  status: 'present' | 'absent'
+  markedAt: string
+}
+
+// --- Outgoing payments ---
+
+export type OutgoingCategory = 'staff' | 'hp-product' | 'other'
+
+export type OutgoingPayment = {
+  id: string
+  category: OutgoingCategory
+  recipient: string
+  description: string
+  amount: number
+  date: string
+  status: 'paid' | 'pending' | 'scheduled'
+  reference?: string
+}
+
+// --- Event management ---
 
 export type EventType = 'training-session' | 'meet' | 'clinic' | 'testing-day'
 export type EventStatus = 'draft' | 'published' | 'cancelled'
@@ -130,14 +129,14 @@ export type ClubEvent = {
   title: string
   eventType: EventType
   description: string
-  date: string              // YYYY-MM-DD
-  startTime: string         // HH:MM
-  endTime: string           // HH:MM
+  date: string
+  startTime: string
+  endTime: string
   location: string
-  squadId: string | null    // SwimClass.id — null = open to all
+  squadId: string | null
   squadName: string | null
   capacity: number
-  registrationCutoff: string // YYYY-MM-DD
+  registrationCutoff: string
   status: EventStatus
   coachName: string
   createdAt: string
@@ -146,7 +145,7 @@ export type ClubEvent = {
 export type EventRegistration = {
   id: string
   eventId: string
-  swimmerId: string         // SwimmerProfile.id (parent side) or ClubSwimmer.id (club side)
+  swimmerId: string
   swimmerName: string
   registeredBy: 'parent' | 'self' | 'coach'
   registeredAt: string

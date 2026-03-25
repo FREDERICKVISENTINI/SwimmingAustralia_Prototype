@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, Navigate, useNavigate, Link } from 'react-router-dom'
 import {
-  Calendar, Clock, MapPin, Users, Edit2, Trash2, ArrowLeft, CheckCircle2, XCircle,
+  Calendar, Clock, MapPin, Users, Edit2, Trash2, ArrowLeft, CheckCircle2, XCircle, ClipboardCheck,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
@@ -30,6 +30,7 @@ export function EventDetailPage() {
     accountType, clubEvents, eventRegistrations,
     swimmers, updateClubEvent, deleteClubEvent,
     addEventRegistration, removeEventRegistration,
+    attendanceRecords, addAttendanceRecord,
   } = useApp()
 
   const isCoach = accountType === 'club'
@@ -128,11 +129,23 @@ export function EventDetailPage() {
             Registration closes: {new Date(event.registrationCutoff + 'T12:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
 
-          {/* Coach: attendee list */}
+          {/* Coach: attendee list + mark attendance */}
           {isCoach && (
-            <div>
-              <h2 className="mb-3 font-display text-base font-semibold text-text-primary">Attendee list</h2>
-              <AttendeeList registrations={eventRegs} capacity={event.capacity} />
+            <div className="space-y-6">
+              <div>
+                <h2 className="mb-3 font-display text-base font-semibold text-text-primary">Attendee list</h2>
+                <AttendeeList registrations={eventRegs} capacity={event.capacity} />
+              </div>
+
+              {eventRegs.length > 0 && (
+                <AttendanceSection
+                  eventId={event.id}
+                  eventDate={event.date}
+                  registrations={eventRegs}
+                  attendanceRecords={attendanceRecords}
+                  onMarkAttendance={addAttendanceRecord}
+                />
+              )}
             </div>
           )}
 
@@ -250,5 +263,81 @@ export function EventDetailPage() {
         </div>
       </Modal>
     </PageSection>
+  )
+}
+
+function AttendanceSection({
+  eventId,
+  eventDate,
+  registrations,
+  attendanceRecords,
+  onMarkAttendance,
+}: {
+  eventId: string
+  eventDate: string
+  registrations: { swimmerId: string; swimmerName: string }[]
+  attendanceRecords: { eventId: string; swimmerId: string; status: 'present' | 'absent' }[]
+  onMarkAttendance: (r: { eventId: string; swimmerId: string; swimmerName: string; date: string; status: 'present' | 'absent' }) => void
+}) {
+  const eventAttendance = useMemo(
+    () => attendanceRecords.filter((a) => a.eventId === eventId),
+    [attendanceRecords, eventId]
+  )
+
+  const getStatus = (swimmerId: string) =>
+    eventAttendance.find((a) => a.swimmerId === swimmerId)?.status ?? null
+
+  const presentCount = eventAttendance.filter((a) => a.status === 'present').length
+  const absentCount = eventAttendance.filter((a) => a.status === 'absent').length
+  const unmarkedCount = registrations.length - presentCount - absentCount
+
+  return (
+    <div className="rounded-[var(--radius-card)] border border-border bg-card shadow-[var(--shadow-card)]">
+      <div className="flex items-center justify-between border-b border-border p-4">
+        <h2 className="flex items-center gap-2 font-display text-base font-semibold text-text-primary">
+          <ClipboardCheck className="h-4 w-4 text-accent" />
+          Mark attendance
+        </h2>
+        <div className="flex items-center gap-3 text-xs text-text-muted">
+          <span className="text-success">{presentCount} present</span>
+          <span className="text-red-400">{absentCount} absent</span>
+          {unmarkedCount > 0 && <span>{unmarkedCount} unmarked</span>}
+        </div>
+      </div>
+      <div className="divide-y divide-border/60">
+        {registrations.map((reg) => {
+          const status = getStatus(reg.swimmerId)
+          return (
+            <div key={reg.swimmerId} className="flex items-center justify-between gap-4 px-4 py-3">
+              <span className="text-sm font-medium text-text-primary">{reg.swimmerName}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onMarkAttendance({ eventId, swimmerId: reg.swimmerId, swimmerName: reg.swimmerName, date: eventDate, status: 'present' })}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    status === 'present'
+                      ? 'bg-success/20 text-success ring-1 ring-success/40'
+                      : 'border border-border text-text-muted hover:bg-success/10 hover:text-success'
+                  }`}
+                >
+                  Present
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMarkAttendance({ eventId, swimmerId: reg.swimmerId, swimmerName: reg.swimmerName, date: eventDate, status: 'absent' })}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    status === 'absent'
+                      ? 'bg-red-400/20 text-red-400 ring-1 ring-red-400/40'
+                      : 'border border-border text-text-muted hover:bg-red-400/10 hover:text-red-400'
+                  }`}
+                >
+                  Absent
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }

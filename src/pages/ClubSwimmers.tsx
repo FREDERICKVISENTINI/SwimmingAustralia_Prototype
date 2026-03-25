@@ -121,7 +121,7 @@ export function ClubSwimmers() {
                   <ClubSwimmerRow
                     key={s.id}
                     swimmer={s}
-                    onView={() => navigate(ROUTES.app.swimmerDetail(s.id))}
+                    onView={() => navigate(`${ROUTES.app.swimmerDetail(s.id)}#profile`)}
                     onViewDetails={() => navigate(`${ROUTES.app.swimmerDetail(s.id)}#details`)}
                   />
                 ))}

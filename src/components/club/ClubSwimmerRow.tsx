@@ -2,9 +2,9 @@ import type { ClubSwimmer } from '../../types/club'
 
 type Props = {
   swimmer: ClubSwimmer
-  /** Profile: contact, details, club history. */
+  /** Profile: contact & club history (`#profile` on swimmer page). */
   onView?: (s: ClubSwimmer) => void
-  /** Details section on swimmer detail page. */
+  /** Details: SPARTA II / pathway & results (`#details`). Profile has roster under `#profile`. */
   onViewDetails?: (s: ClubSwimmer) => void
 }
 

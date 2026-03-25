@@ -57,6 +57,13 @@ export function PathwayFunnel({ currentStageId, swimmerName, onStageSelect, clas
           )
         })}
       </div>
+      <p className="mt-4 border-t border-border/60 pt-4 text-sm leading-relaxed text-text-secondary">
+        The <strong className="font-medium text-text-primary">highlighted stage</strong> follows this swimmer’s squad /
+        pathway on file. It updates when their club assigns a new squad or you change pathway stage in{' '}
+        <strong className="font-medium text-text-primary">My Swimmers</strong>. Tapping another stage previews that step
+        (demo: saves as their stage). With several swimmers on your account, each can be on a different step — use the
+        swimmer control under the page title to switch.
+      </p>
     </div>
   )
 }

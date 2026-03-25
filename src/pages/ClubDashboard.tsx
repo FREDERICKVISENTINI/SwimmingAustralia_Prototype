@@ -7,7 +7,7 @@ import { ClubMetricCard, QuickActionPanel } from '../components/club'
 import { EventCard } from '../components/events/EventCard'
 import { PATHWAY_STAGES } from '../theme/tokens'
 import { ROUTES } from '../routes'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Lock, Unlock } from 'lucide-react'
 
 const ORG_TYPE_LABELS: Record<TeamProfile['organisationType'], string> = {
   club: 'Club',
@@ -17,7 +17,7 @@ const ORG_TYPE_LABELS: Record<TeamProfile['organisationType'], string> = {
 }
 
 export function ClubDashboard() {
-  const { teamProfile, clubClasses, clubSwimmers, clubPayments, clubStatUploads, isPremiumTier, clubEvents, eventRegistrations } = useApp()
+  const { teamProfile, clubClasses, clubSwimmers, clubPayments, clubStatUploads, isPremiumTier, clubEvents, eventRegistrations, attendanceRecords } = useApp()
   const navigate = useNavigate()
 
   if (!teamProfile) {
@@ -53,16 +53,19 @@ export function ClubDashboard() {
       .slice(0, 3)
   }, [clubEvents])
 
-  // At-risk detection (club only): no stats in 30+ days OR overdue payment
   const atRiskSwimmers = useMemo(() => {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     return clubSwimmers.filter((s) => {
       const noRecentStat = !s.latestStatDate || new Date(s.latestStatDate) < thirtyDaysAgo
       const paymentIssue = s.paymentStatus === 'overdue'
-      return noRecentStat || paymentIssue
+      const inactive = s.attendanceStatus === 'inactive'
+      const swimmerRecords = attendanceRecords.filter((a) => a.swimmerId === s.id)
+      const present = swimmerRecords.filter((a) => a.status === 'present').length
+      const lowAttendance = swimmerRecords.length >= 3 && (present / swimmerRecords.length) < 0.6
+      return noRecentStat || paymentIssue || inactive || lowAttendance
     })
-  }, [clubSwimmers])
+  }, [clubSwimmers, attendanceRecords])
 
   return (
     <PageSection
@@ -101,13 +104,13 @@ export function ClubDashboard() {
         <ClubMetricCard label="Active classes" value={activeClasses} subtext={`${clubClasses.length} total`} />
         <ClubMetricCard label="Payments collected" value={`$${totalCollected}`} subtext={`${paid} paid`} />
         <ClubMetricCard label="Outstanding" value={`$${outstanding}`} subtext={`${due + overdue} due/overdue`} />
-        <ClubMetricCard label="Recent stat uploads" value={clubStatUploads.length} subtext="This period" to={ROUTES.app.insights} />
+        <ClubMetricCard label="Recent stat uploads" value={clubStatUploads.length} subtext="This period" to={ROUTES.app.stats} />
       </div>
 
       <QuickActionPanel
         actions={[
           { label: 'Create event', onClick: () => navigate(ROUTES.app.eventCreate) },
-          { label: 'Add swimmer', onClick: () => navigate(ROUTES.app.swimmers) },
+          { label: 'Add swimmer', onClick: () => navigate(ROUTES.app.classes) },
           { label: 'Upload stats', onClick: () => navigate(ROUTES.app.stats) },
           { label: 'Record payment', onClick: () => navigate(ROUTES.app.payments) },
         ]}
@@ -194,60 +197,122 @@ export function ClubDashboard() {
         </div>
       )}
 
-      <div className="rounded-[var(--radius-card)] border border-success/30 bg-card p-5 shadow-[var(--shadow-card)]">
-        <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
-          Club pathway support
-        </h3>
-        <p className="mt-2 text-sm text-text-secondary">
-          Use Classes, Swimmers, and Stats to manage development across the pathway. Upload times and observations to keep progression visible for athletes and parents.
-        </p>
+      {/* Premium insights section */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-text-primary flex items-center gap-2">
+            {isPremiumTier ? <Unlock className="h-4 w-4 text-premium" /> : <Lock className="h-4 w-4 text-text-muted" />}
+            Premium Insights
+          </h2>
+          {!isPremiumTier && (
+            <span className="text-xs text-text-muted">Enable Premium in Settings to unlock</span>
+          )}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PremiumCard
+            title="National Benchmarking"
+            description="Compare your swimmers to state and national averages by pathway stage and age group."
+            locked={!isPremiumTier}
+          >
+            <div className="space-y-2">
+              {PATHWAY_STAGES.slice(1, 5).map((stage) => {
+                const count = clubSwimmers.filter((s) => s.pathwayStageId === stage.id).length
+                const natAvg = Math.round(count * (0.8 + Math.random() * 0.4))
+                return (
+                  <div key={stage.id} className="flex items-center justify-between text-sm">
+                    <span className="text-text-secondary">{stage.label}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-text-primary font-medium">{count} swimmers</span>
+                      <span className="text-text-muted">vs. {natAvg} avg</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </PremiumCard>
+
+          <PremiumCard
+            title="Attendance Analytics"
+            description="Attendance trends, dropout risk scoring, and engagement patterns across your club."
+            locked={!isPremiumTier}
+          >
+            <div className="space-y-2">
+              {(() => {
+                const total = attendanceRecords.length
+                const present = attendanceRecords.filter((a) => a.status === 'present').length
+                const rate = total > 0 ? Math.round((present / total) * 100) : 0
+                return (
+                  <>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Overall attendance rate</span>
+                      <span className="text-text-primary font-semibold">{rate}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Total sessions tracked</span>
+                      <span className="text-text-primary font-medium">{total}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">At-risk swimmers</span>
+                      <span className="text-red-400 font-medium">{atRiskSwimmers.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Avg. sessions per swimmer</span>
+                      <span className="text-text-primary font-medium">
+                        {clubSwimmers.length > 0 ? (total / clubSwimmers.length).toFixed(1) : '0'}
+                      </span>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </PremiumCard>
+        </div>
+      </section>
+
+    </PageSection>
+  )
+}
+
+function PremiumCard({
+  title,
+  description,
+  locked,
+  children,
+}: {
+  title: string
+  description: string
+  locked: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className={`relative rounded-[var(--radius-card)] border p-5 shadow-[var(--shadow-card)] transition-all ${
+        locked
+          ? 'border-border bg-card'
+          : 'border-premium/30 bg-card'
+      }`}
+    >
+      <h3 className="font-display text-sm font-semibold text-text-primary">{title}</h3>
+      <p className="mt-1 text-xs text-text-muted">{description}</p>
+      <div className={`mt-4 ${locked ? 'blur-sm select-none pointer-events-none' : ''}`}>
+        {children}
       </div>
-
-      {isPremiumTier && (
-        <div className="space-y-6 mt-8 pt-8 border-t border-border/80">
-          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Premium features
-          </h3>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-[var(--radius-card)] border border-premium/30 bg-card p-5 shadow-[var(--shadow-card)]">
-              <h4 className="font-display text-sm font-semibold text-text-primary">National Benchmarking</h4>
-              <p className="mt-2 text-sm text-text-secondary">
-                Compare your swimmers to state and national averages. Your club has {totalSwimmers} swimmers; state median for similar clubs is ~95.
-              </p>
-              <p className="mt-2 text-xs text-text-muted">Based on existing pathway and registration data.</p>
-            </div>
-            <div className="rounded-[var(--radius-card)] border border-premium/30 bg-card p-5 shadow-[var(--shadow-card)]">
-              <h4 className="font-display text-sm font-semibold text-text-primary">Performance Insights</h4>
-              <p className="mt-2 text-sm text-text-secondary">
-                Swimmer improvement trends and progression from your uploaded results. {clubStatUploads.length} uploads this period feed into trend views.
-              </p>
-              <p className="mt-2 text-xs text-text-muted">Uses your existing stats and event data.</p>
-            </div>
-            <div className="rounded-[var(--radius-card)] border border-premium/30 bg-card p-5 shadow-[var(--shadow-card)]">
-              <h4 className="font-display text-sm font-semibold text-text-primary">Club Analytics</h4>
-              <p className="mt-2 text-sm text-text-secondary">
-                Retention trends and athlete progression visibility by pathway stage and class. {activeClasses} active classes, {totalSwimmers} swimmers across pathway stages.
-              </p>
-              <p className="mt-2 text-xs text-text-muted">Derived from classes, swimmers, and pathway data.</p>
-            </div>
-            <div className="rounded-[var(--radius-card)] border border-premium/30 bg-card p-5 shadow-[var(--shadow-card)]">
-              <h4 className="font-display text-sm font-semibold text-text-primary">Advanced Reports</h4>
-              <p className="mt-2 text-sm text-text-secondary">
-                Downloadable parent and coach reports: progression summaries, attendance, and performance snapshots from your existing data.
-              </p>
-              <p className="mt-2 text-xs text-text-muted">Export available for current term.</p>
-            </div>
-          </div>
-
-          <div className="rounded-[var(--radius-card)] border border-premium/30 bg-premium/5 p-5 shadow-[var(--shadow-card)]">
-            <h4 className="font-display text-sm font-semibold text-premium">Federation Visibility</h4>
-            <p className="mt-2 text-sm text-text-secondary">
-              Your club is eligible for broader pathway insights and state/national program visibility when you use Premium. Data is shared in line with pathway reporting so athletes can be considered for development opportunities.
-            </p>
+      {locked && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius-card)] bg-bg/60 backdrop-blur-[2px]">
+          <div className="text-center">
+            <Lock className="mx-auto h-6 w-6 text-text-muted" />
+            <p className="mt-2 text-sm font-medium text-text-secondary">Unlock with Premium</p>
+            <p className="mt-0.5 text-xs text-text-muted">Enable in Settings → Premium</p>
+            <Link
+              to={ROUTES.app.plans}
+              className="mt-3 inline-block text-xs font-medium text-accent hover:underline"
+            >
+              View Plans &amp; billing
+            </Link>
           </div>
         </div>
       )}
-    </PageSection>
+    </div>
   )
 }

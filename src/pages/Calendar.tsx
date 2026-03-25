@@ -1,18 +1,19 @@
 import { useMemo, useState } from 'react'
-import { Calendar as CalendarIcon, Trophy, Users, Zap } from 'lucide-react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { PageSection } from '../components/layout/PageSection'
 import {
   AgendaList,
   CalendarFilterBar,
   CalendarMiniHeader,
-  CalendarSummaryCard,
   MiniCalendarWithUpcoming,
   SwimmerFilterTabs,
 } from '../components/calendar'
 import { MOCK_CALENDAR_EVENTS, getSwimmerNamesFromEvents, getClubCalendarEvents } from '../data/calendarEvents'
+import { ROUTES } from '../routes'
 import type { CalendarEvent, CalendarViewMode, CalendarActivityFilter } from '../types/calendar'
 import type { ClubEvent } from '../types/club'
+import { EventsListPanel } from './EventsPage'
 
 function clubEventToCalendar(e: ClubEvent): CalendarEvent {
   const typeMap: Record<string, CalendarEvent['type']> = {
@@ -62,7 +63,69 @@ function isInRange(dateStr: string, start: Date, end: Date): boolean {
   return t >= start.getTime() && t <= end.getTime()
 }
 
-export function Calendar() {
+/** Shell: title, subheading tabs (Schedule | Events), outlet. */
+export function CalendarLayout() {
+  const { accountType } = useApp()
+  const { pathname } = useLocation()
+  const isClub = accountType === 'club'
+
+  const onEvents = pathname === ROUTES.app.calendarEvents || pathname.endsWith('/calendar/events')
+
+  const subtitle = onEvents
+    ? isClub
+      ? 'Create, publish, and track club events — or switch to Schedule for the calendar agenda.'
+      : 'Register for club events and meets — or switch to Schedule for your family calendar.'
+    : isClub
+      ? 'Sessions and events from your classes. Link your calendar for full view.'
+      : 'View upcoming training sessions, events, and pathway activities.'
+
+  return (
+    <PageSection title="Calendar" subtitle={subtitle}>
+      <div
+        className="mt-2 border-b border-border bg-bg-elevated/50"
+        role="tablist"
+        aria-label="Calendar views"
+      >
+        <div className="flex gap-0 overflow-x-auto">
+          <NavLink
+            to={ROUTES.app.calendar}
+            end
+            role="tab"
+            className={({ isActive }) =>
+              `shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-text-muted hover:border-border hover:text-text-secondary'
+              }`
+            }
+          >
+            Schedule
+          </NavLink>
+          <NavLink
+            to={ROUTES.app.calendarEvents}
+            role="tab"
+            className={({ isActive }) =>
+              `shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-text-muted hover:border-border hover:text-text-secondary'
+              }`
+            }
+          >
+            Events
+          </NavLink>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <Outlet />
+      </div>
+    </PageSection>
+  )
+}
+
+/** Agenda / mini calendar view (default `/calendar`). */
+export function CalendarSchedulePage() {
   const { accountType, swimmers, clubClasses, clubEvents } = useApp()
   const isParent = accountType === 'parent'
   const isClub = accountType === 'club'
@@ -83,7 +146,6 @@ export function Calendar() {
   )
   const familyNameSet = useMemo(() => new Set(familyNames), [familyNames])
 
-  // Real club events converted to CalendarEvent format
   const realClubCalEvents = useMemo(
     () => clubEvents.filter((e) => e.status === 'published').map(clubEventToCalendar),
     [clubEvents]
@@ -133,15 +195,24 @@ export function Calendar() {
         ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, monthStart, monthEnd)),
         ...realClubCalEvents.filter((e) => isInRange(e.date, monthStart, monthEnd)),
       ]
-      if (isParent && familyNameSet.size > 0) list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
-      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
+      if (isParent && familyNameSet.size > 0)
+        list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
+      if (isParent && selectedSwimmer)
+        list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
     }
     if (activityFilter !== 'all') list = list.filter((e) => e.type === activityFilter)
-    return list.sort(
-      (a, b) =>
-        a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
-    )
-  }, [focusDate, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet, realClubCalEvents])
+    return list.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
+  }, [
+    focusDate,
+    activityFilter,
+    isParent,
+    isClub,
+    clubClasses,
+    selectedSquadId,
+    selectedSwimmer,
+    familyNameSet,
+    realClubCalEvents,
+  ])
 
   const filteredEvents = useMemo(() => {
     let list: typeof MOCK_CALENDAR_EVENTS
@@ -156,65 +227,27 @@ export function Calendar() {
         ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
         ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
       ]
-      if (isParent && familyNameSet.size > 0) list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
-      if (isParent && selectedSwimmer) list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
+      if (isParent && familyNameSet.size > 0)
+        list = list.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
+      if (isParent && selectedSwimmer)
+        list = list.filter((e) => e.swimmerName === null || e.swimmerName === selectedSwimmer)
     }
     if (activityFilter !== 'all') list = list.filter((e) => e.type === activityFilter)
     return list.sort(
-      (a, b) =>
-        a.date.localeCompare(b.date) ||
-        a.startTime.localeCompare(b.startTime)
+      (a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
     )
-  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNameSet, realClubCalEvents])
-
-  const summaryStats = useMemo(() => {
-    const now = new Date()
-    const weekStart = getWeekStart(now)
-    const weekEnd = addDays(weekStart, 6)
-    const weekendStart = addDays(weekStart, 5)
-    const weekendEnd = addDays(weekStart, 6)
-    let allInRange: typeof MOCK_CALENDAR_EVENTS
-    if (isClub) {
-      allInRange = [
-        ...getClubCalendarEvents(clubClasses, rangeStart, rangeEnd, { maxDays: 14 }),
-        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
-      ]
-      if (selectedSquadId) allInRange = allInRange.filter((e) => e.id.startsWith(`club-${selectedSquadId}-`))
-    } else {
-      allInRange = [
-        ...MOCK_CALENDAR_EVENTS.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
-        ...realClubCalEvents.filter((e) => isInRange(e.date, rangeStart, rangeEnd)),
-      ]
-      if (isParent && familyNameSet.size > 0) allInRange = allInRange.filter((e) => e.swimmerName === null || familyNameSet.has(e.swimmerName ?? ''))
-    }
-    let forSummary = allInRange
-    if (activityFilter !== 'all') forSummary = forSummary.filter((e) => e.type === activityFilter)
-    if (isParent && selectedSwimmer) forSummary = forSummary.filter((e) => e.swimmerName === selectedSwimmer)
-
-    const thisWeek = forSummary.filter((e) =>
-      isInRange(e.date, weekStart, weekEnd)
-    )
-    const thisWeekend = forSummary.filter((e) =>
-      isInRange(e.date, weekendStart, weekendEnd)
-    )
-    const competitions = thisWeekend.filter((e) => e.type === 'competition')
-    const nextEvent = forSummary.find(
-      (e) =>
-        new Date(e.date + 'T' + e.endTime).getTime() >= now.getTime()
-    )
-    const linkedCount = isParent ? familyNames.length : 0
-    return {
-      activitiesThisWeek: thisWeek.length,
-      competitionsThisWeekend: competitions.length,
-      nextEventTitle: nextEvent
-        ? `${nextEvent.title}${nextEvent.swimmerName ? ` (${nextEvent.swimmerName})` : ''}`
-        : (isClub ? 'No sessions this period' : 'No upcoming events'),
-      nextEventSubtitle: nextEvent
-        ? `${nextEvent.date} ${nextEvent.startTime}`
-        : undefined,
-      linkedSwimmers: linkedCount,
-    }
-  }, [rangeStart, rangeEnd, activityFilter, isParent, isClub, clubClasses, selectedSquadId, selectedSwimmer, familyNames.length, familyNameSet, swimmerNames.length, realClubCalEvents])
+  }, [
+    rangeStart,
+    rangeEnd,
+    activityFilter,
+    isParent,
+    isClub,
+    clubClasses,
+    selectedSquadId,
+    selectedSwimmer,
+    familyNameSet,
+    realClubCalEvents,
+  ])
 
   const handlePrev = () => {
     if (viewMode === 'month') {
@@ -237,41 +270,31 @@ export function Calendar() {
   }
 
   return (
-    <PageSection
-      title="Calendar"
-      subtitle={isClub
-        ? 'Sessions and events from your classes. Link your calendar for full view.'
-        : 'View upcoming training sessions, events, and pathway activities.'}
-    >
-      {/* White calendar with dots + 4 soonest */}
-      <MiniCalendarWithUpcoming
-        focusDate={focusDate}
-        events={eventsForMiniCalendar}
-      />
+    <>
+      <MiniCalendarWithUpcoming focusDate={focusDate} events={eventsForMiniCalendar} />
 
       {isClub && clubClasses.length > 0 && (
         <div className="mb-4">
-          <label className="block text-xs font-medium text-text-muted mb-1.5">Squad</label>
+          <label className="mb-1.5 block text-xs font-medium text-text-muted">Squad</label>
           <select
             value={selectedSquadId}
             onChange={(e) => setSelectedSquadId(e.target.value)}
-            className="rounded-[var(--radius-button)] border border-border bg-bg px-3 py-2 text-sm text-text-primary w-full sm:w-48"
+            className="w-full rounded-[var(--radius-button)] border border-border bg-bg px-3 py-2 text-sm text-text-primary sm:w-48"
           >
             <option value="">All squads</option>
-            {clubClasses.filter((c) => c.status === 'active').map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            {clubClasses
+              .filter((c) => c.status === 'active')
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
           </select>
         </div>
       )}
 
-      {/* Top controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <CalendarMiniHeader
-          label={headerLabel}
-          onPrev={handlePrev}
-          onNext={handleNext}
-        />
+        <CalendarMiniHeader label={headerLabel} onPrev={handlePrev} onNext={handleNext} />
         <CalendarFilterBar
           viewMode={viewMode}
           onViewModeChange={setViewMode}
@@ -288,40 +311,14 @@ export function Calendar() {
         />
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr,280px]">
-        {/* Main: agenda list */}
-        <div className="min-w-0">
-          <AgendaList events={filteredEvents} />
-        </div>
-
-        {/* Right: summary cards */}
-        <aside className="space-y-4">
-          {isParent && summaryStats.linkedSwimmers > 0 && (
-            <CalendarSummaryCard
-              title="Swimmers linked"
-              value={summaryStats.linkedSwimmers}
-              subtitle="in this view"
-              icon={<Users className="h-5 w-5" />}
-            />
-          )}
-          <CalendarSummaryCard
-            title="Activities this week"
-            value={summaryStats.activitiesThisWeek}
-            icon={<Zap className="h-5 w-5" />}
-          />
-          <CalendarSummaryCard
-            title="Competitions this weekend"
-            value={summaryStats.competitionsThisWeekend}
-            icon={<Trophy className="h-5 w-5" />}
-          />
-          <CalendarSummaryCard
-            title="Upcoming next"
-            value={summaryStats.nextEventTitle}
-            subtitle={summaryStats.nextEventSubtitle ?? 'Next event in range'}
-            icon={<CalendarIcon className="h-5 w-5" />}
-          />
-        </aside>
+      <div className="min-w-0">
+        <AgendaList events={filteredEvents} />
       </div>
-    </PageSection>
+    </>
   )
+}
+
+/** Club events list (`/calendar/events`). */
+export function CalendarEventsPage() {
+  return <EventsListPanel />
 }

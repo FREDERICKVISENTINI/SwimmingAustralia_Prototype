@@ -16,9 +16,15 @@ export type NearbyProgram = {
   title: string
   description: string
   location: string
-  distance?: string
   category: string
   ctaLabel: string
+  /** Places filled vs capacity — same semantics as club events (for SpotsRemaining UI). */
+  registered: number
+  capacity: number
+  /** Lead coach or contact role — mirrors event cards’ coach line. */
+  coachName?: string
+  /** When the next intake or session runs — mirrors date/time cues on event cards. */
+  nextSessionSummary?: string
 }
 
 export type UpcomingOpportunity = {

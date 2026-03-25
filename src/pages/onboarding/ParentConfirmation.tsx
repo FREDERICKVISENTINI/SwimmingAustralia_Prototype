@@ -26,7 +26,7 @@ function ageFromDoB(dob: string) {
 
 export function ParentConfirmation({ profile, onCreateProfile, onBack }: Props) {
   const stageLabel =
-    PATHWAY_STAGES.find((s) => s.id === profile.pathwayStage)?.label ?? profile.pathwayStage ?? '—'
+    PATHWAY_STAGES.find((s) => s.id === profile.pathwayStageId)?.label ?? profile.pathwayStageId ?? '—'
   const age = profile.dateOfBirth ? ageFromDoB(profile.dateOfBirth) : null
 
   return (

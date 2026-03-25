@@ -145,12 +145,110 @@ const GENDER_SCALE: Record<string, number> = {
   M: 0.48,
 }
 
-export function deriveFilteredMetrics(filters: FederationFilters) {
+const PROGRAM_SCALE: Record<string, number> = {
+  all: 1,
+  squad: 0.42,
+  'learn-to-swim': 0.38,
+  competition: 0.28,
+  development: 0.22,
+}
+
+const STROKE_DIM: Record<string, number> = {
+  all: 1,
+  free: 0.28,
+  back: 0.22,
+  breast: 0.2,
+  fly: 0.14,
+  im: 0.16,
+}
+
+const DISTANCE_DIM: Record<string, number> = {
+  all: 1,
+  '50': 0.35,
+  '100': 0.32,
+  '200': 0.22,
+  '400': 0.11,
+}
+
+/** Maps filter value to age distribution label (must match AGE_GROUP_DISTRIBUTION labels). */
+const AGE_GROUP_TO_LABEL: Record<string, string> = {
+  '8-under': '8 & under',
+  '9-10': '9–10',
+  '11-12': '11–12',
+  '13-14': '13–14',
+  '15-over': '15+',
+}
+
+function getFilteredAgeDistribution(filters: FederationFilters): { label: string; pct: number }[] {
+  if (filters.ageGroup === 'all') {
+    return AGE_GROUP_DISTRIBUTION.map((r) => ({ label: r.label, pct: r.pct }))
+  }
+  const target = AGE_GROUP_TO_LABEL[filters.ageGroup]
+  return AGE_GROUP_DISTRIBUTION.map((r) => ({
+    label: r.label,
+    pct: r.label === target ? 100 : 0,
+  }))
+}
+
+function getFilteredGenderDistribution(filters: FederationFilters): { label: string; pct: number }[] {
+  if (filters.gender === 'all') {
+    return GENDER_DISTRIBUTION.map((r) => ({ label: r.label, pct: r.pct }))
+  }
+  if (filters.gender === 'F') {
+    return [
+      { label: 'Female', pct: 100 },
+      { label: 'Male', pct: 0 },
+    ]
+  }
+  return [
+    { label: 'Female', pct: 0 },
+    { label: 'Male', pct: 100 },
+  ]
+}
+
+function getFilteredStageRetention(filters: FederationFilters) {
+  const nudge = filters.pathwayStage === 'all' ? 0 : filters.pathwayStage === 'elite' ? 3 : 1
+  return STAGE_RETENTION.map((row) => ({
+    ...row,
+    rate: Math.min(100, row.rate + nudge),
+  }))
+}
+
+function getFilteredRankingsPreview(filters: FederationFilters) {
+  const strokeWord: Record<string, string> = {
+    free: 'Free',
+    back: 'Back',
+    breast: 'Breast',
+    fly: 'Fly',
+    im: 'IM',
+  }
+  if (filters.stroke === 'all') return [...NATIONAL_RANKINGS_PREVIEW]
+  const w = strokeWord[filters.stroke]
+  if (!w) return [...NATIONAL_RANKINGS_PREVIEW]
+  return NATIONAL_RANKINGS_PREVIEW.filter((row) => row.event.includes(w))
+}
+
+/** Shared filter → scale mapping for federation mock metrics (used by commercial insights too). */
+export function getFederationCohortScale(filters: FederationFilters): { scale: number; cohortScale: number } {
+  const programScale = PROGRAM_SCALE[filters.programType] ?? 1
+  const strokeScale = STROKE_DIM[filters.stroke] ?? 1
+  const distanceScale = DISTANCE_DIM[filters.distance] ?? 1
+
   const scale =
     (STATE_SCALE[filters.state] ?? 1) *
     (STAGE_SCALE[filters.pathwayStage] ?? 1) *
     (AGE_SCALE[filters.ageGroup] ?? 1) *
-    (GENDER_SCALE[filters.gender] ?? 1)
+    (GENDER_SCALE[filters.gender] ?? 1) *
+    programScale *
+    strokeScale *
+    distanceScale
+
+  const cohortScale = Math.max(0.25, Math.min(1.15, scale))
+  return { scale, cohortScale }
+}
+
+export function deriveFilteredMetrics(filters: FederationFilters) {
+  const { scale, cohortScale } = getFederationCohortScale(filters)
 
   const base = FEDERATION_SUMMARY_METRICS.totalSwimmers
   const total = Math.round(base * scale)
@@ -161,7 +259,10 @@ export function deriveFilteredMetrics(filters: FederationFilters) {
     filters.ageGroup !== 'all' ||
     filters.gender !== 'all' ||
     filters.club !== 'all' ||
-    filters.meetLevel !== 'all'
+    filters.meetLevel !== 'all' ||
+    filters.programType !== 'all' ||
+    filters.stroke !== 'all' ||
+    filters.distance !== 'all'
 
   // Talent: scale flagged count, filter by stroke if selected
   const allAthletes = [
@@ -220,6 +321,48 @@ export function deriveFilteredMetrics(filters: FederationFilters) {
     ? allMeetLevels.filter((m) => m.level.toLowerCase() === filters.meetLevel)
     : allMeetLevels
 
+  const pathwayFunnel = PATHWAY_FUNNEL.map((row) => ({
+    ...row,
+    count: Math.max(10, Math.round(row.count * cohortScale)),
+  }))
+
+  const convNudge = filters.pathwayStage === 'elite' ? 2 : filters.pathwayStage === 'all' ? 0 : 1
+  const conversionSummary = CONVERSION_SUMMARY.map((row) => ({
+    ...row,
+    rate: Math.min(100, row.rate + convNudge),
+  }))
+
+  const clubAvgFromTable =
+    filteredClubs.length > 0
+      ? {
+          avgRetention: Math.round(
+            filteredClubs.reduce((s, c) => s + c.retention, 0) / filteredClubs.length
+          ),
+          avgImprovement: Math.round(
+            (filteredClubs.reduce((s, c) => s + c.improvement, 0) / filteredClubs.length) * 10
+          ) / 10,
+          topClubsProgression: Math.max(...filteredClubs.map((c) => c.progression)),
+        }
+      : null
+
+  const eventScale = Math.max(0.4, Math.min(1, scale))
+  const eventAnalytics = {
+    meetsThisYear: Math.max(1, Math.round(EVENT_ANALYTICS.meetsThisYear * eventScale)),
+    avgParticipationPerMeet: Math.max(80, Math.round(EVENT_ANALYTICS.avgParticipationPerMeet * eventScale)),
+    qualificationRate: Math.min(95, Math.round(EVENT_ANALYTICS.qualificationRate * (0.92 + 0.08 * eventScale))),
+    pbImprovementRate: Math.min(95, Math.round(EVENT_ANALYTICS.pbImprovementRate * (0.9 + 0.1 * eventScale))),
+  }
+
+  const talentLeaderboardRows = [...filteredAthletes]
+    .sort((a, b) => b.improvement - a.improvement)
+    .slice(0, 3)
+    .map((a, i) => ({
+      rank: i + 1,
+      name: a.name,
+      metric: `+${a.improvement}%`,
+      label: 'PB improvement (90d)' as const,
+    }))
+
   return {
     isFiltered,
     total,
@@ -229,6 +372,22 @@ export function deriveFilteredMetrics(filters: FederationFilters) {
     filteredMeetLevels,
     talentFlaggedCount: Math.round(FEDERATION_SUMMARY_METRICS.talentFlags * scale),
     retentionRate: Math.max(60, Math.round((78.2 + (filters.pathwayStage === 'elite' ? 5 : 0)) * 10) / 10),
+    ageDistribution: getFilteredAgeDistribution(filters),
+    genderDistribution: getFilteredGenderDistribution(filters),
+    stageRetentionRows: getFilteredStageRetention(filters),
+    pathwayFunnel,
+    conversionSummary,
+    clubPerformanceSummary: clubAvgFromTable ?? {
+      avgRetention: CLUB_PERFORMANCE_SUMMARY.avgRetention,
+      avgImprovement: CLUB_PERFORMANCE_SUMMARY.avgImprovement,
+      topClubsProgression: CLUB_PERFORMANCE_SUMMARY.topClubsProgression,
+    },
+    eventAnalytics,
+    rankingsPreview: getFilteredRankingsPreview(filters),
+    talentLeaderboardRows:
+      talentLeaderboardRows.length > 0
+        ? talentLeaderboardRows
+        : TALENT_LEADERBOARD.map((r) => ({ ...r, label: r.label as 'PB improvement (90d)' })),
   }
 }
 
@@ -343,25 +502,3 @@ export const NATIONAL_RANKINGS_PREVIEW = [
   { rank: 3, name: 'Zara Williams', event: '100 Fly', time: '59.21', club: 'Chandler' },
 ] as const
 
-// Commercial & Sponsorship
-export const COMMERCIAL_METRICS = {
-  participationGrowthYoy: 4.2,
-  demographicReach: 84720,
-  engagementScore: 82,
-  sponsorActivationPerformance: 94,
-} as const
-
-export const PATHWAY_STAGE_DISTRIBUTION_COMMERCIAL = [
-  { stage: 'Learn-to-Swim', pct: 38 },
-  { stage: 'Junior Squad', pct: 26 },
-  { stage: 'Competitive Club', pct: 18 },
-  { stage: 'State Pathway', pct: 4 },
-  { stage: 'Elite', pct: 1 },
-] as const
-
-export const SPONSORSHIP_SUMMARY = [
-  { label: 'Participation growth (YoY)', value: '+4.2%', highlight: true },
-  { label: 'Total athlete reach', value: '84,720', highlight: false },
-  { label: 'Engagement score', value: '82/100', highlight: false },
-  { label: 'Activation performance', value: '94%', highlight: true },
-] as const
